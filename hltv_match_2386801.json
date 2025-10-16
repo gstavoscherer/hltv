@@ -1,0 +1,139 @@
+{
+  "match_url": "https://www.hltv.org/matches/2386801/og-vs-9z-thunderpick-world-championship-2025",
+  "team1": {
+    "name": "OG",
+    "logo": "https://img-cdn.hltv.org/teamlogo/VZHA__RIJY6gisB-l6HfiO.png?ixlib=java-2.1.0&w=100&s=2ef53aec0eec6572ba50ed419222d4e5",
+    "score": null
+  },
+  "team2": {
+    "name": "9z",
+    "logo": "https://img-cdn.hltv.org/teamlogo/COZDFWOIm41AT0srqOHFhM.png?invert=true&ixlib=java-2.1.0&sat=-100&w=100&s=002bc4bec253f97296484dc3986a233a",
+    "score": null
+  },
+  "maps": [
+    {
+      "map_name": "Train",
+      "result": "OG\n13\nSTATS\n(7:5; 6:2)\n9z\n7"
+    },
+    {
+      "map_name": "Nuke",
+      "result": "OG\n8\nSTATS\n(5:7; 3:6)\n9z\n13"
+    },
+    {
+      "map_name": "Ancient",
+      "result": "OG\n16\nSTATS\n(7:5; 5:7) (4:7)\n9z\n19"
+    }
+  ],
+  "players": [
+    {
+      "team": "OG",
+      "player": "adamb",
+      "country": "Sweden",
+      "link": "https://www.hltv.org/player/20878/adamb",
+      "kd": "74-49",
+      "+/-": "+25",
+      "adr": "97.7",
+      "swing": "+5.08%",
+      "rating": "1.49"
+    },
+    {
+      "team": "OG",
+      "player": "spooke",
+      "country": "Sweden",
+      "link": "https://www.hltv.org/player/19064/spooke",
+      "kd": "52-59",
+      "+/-": "-7",
+      "adr": "87.5",
+      "swing": "-0.72%",
+      "rating": "1.02"
+    },
+    {
+      "team": "OG",
+      "player": "nicoodoz",
+      "country": "Denmark",
+      "link": "https://www.hltv.org/player/13602/nicoodoz",
+      "kd": "59-55",
+      "+/-": "+4",
+      "adr": "76.6",
+      "swing": "-1.92%",
+      "rating": "0.93"
+    },
+    {
+      "team": "OG",
+      "player": "arrozdoce",
+      "country": "Portugal",
+      "link": "https://www.hltv.org/player/20465/arrozdoce",
+      "kd": "41-56",
+      "+/-": "-15",
+      "adr": "60.3",
+      "swing": "-1.69%",
+      "rating": "0.91"
+    },
+    {
+      "team": "OG",
+      "player": "Chr1zN",
+      "country": "Denmark",
+      "link": "https://www.hltv.org/player/21983/chr1zn",
+      "kd": "38-56",
+      "+/-": "-18",
+      "adr": "59.2",
+      "swing": "-3.28%",
+      "rating": "0.72"
+    },
+    {
+      "team": "9z",
+      "player": "Luken",
+      "country": "Argentina",
+      "link": "https://www.hltv.org/player/15914/luken",
+      "kd": "74-48",
+      "+/-": "+26",
+      "adr": "106.8",
+      "swing": "+6.52%",
+      "rating": "1.60"
+    },
+    {
+      "team": "9z",
+      "player": "HUASOPEEK",
+      "country": "Chile",
+      "link": "https://www.hltv.org/player/22613/huasopeek",
+      "kd": "60-53",
+      "+/-": "+7",
+      "adr": "81.0",
+      "swing": "-0.24%",
+      "rating": "1.15"
+    },
+    {
+      "team": "9z",
+      "player": "max",
+      "country": "Uruguay",
+      "link": "https://www.hltv.org/player/12092/max",
+      "kd": "55-55",
+      "+/-": "0",
+      "adr": "82.0",
+      "swing": "-0.53%",
+      "rating": "1.10"
+    },
+    {
+      "team": "9z",
+      "player": "urban0",
+      "country": "Brazil",
+      "link": "https://www.hltv.org/player/22181/urban0",
+      "kd": "50-60",
+      "+/-": "-10",
+      "adr": "69.3",
+      "swing": "+0.05%",
+      "rating": "1.05"
+    },
+    {
+      "team": "9z",
+      "player": "levi",
+      "country": "Brazil",
+      "link": "https://www.hltv.org/player/22371/levi",
+      "kd": "36-52",
+      "+/-": "-16",
+      "adr": "52.1",
+      "swing": "-3.59%",
+      "rating": "0.72"
+    }
+  ]
+}
