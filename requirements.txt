@@ -1,3 +1,14 @@
+# Web scraping
 bs4
 requests
 playwright
+
+# Selenium for Cloudflare bypass
+selenium
+undetected-chromedriver
+setuptools
+
+# Database
+sqlalchemy>=2.0.0
+psycopg2-binary  # PostgreSQL adapter (optional, for production)
+alembic  # Database migrations (optional, for schema changes)

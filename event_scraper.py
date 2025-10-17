@@ -19,6 +19,20 @@ import argparse
 import time
 import json
 import re
+import ssl
+
+# Fix SSL certificate issues for Selenium
+ssl._create_default_https_context = ssl._create_unverified_context
+
+# Try to import Selenium with undetected-chromedriver
+try:
+    import undetected_chromedriver as uc
+    from selenium.webdriver.common.by import By
+    SELENIUM_AVAILABLE = True
+except ImportError:
+    SELENIUM_AVAILABLE = False
+    print("⚠️  Selenium não disponível. Stats serão extraídos com Playwright (pode falhar no Cloudflare)")
+
 
 BASE = "https://www.hltv.org"
 EVENT_PATH = "/events/{id}"                         # base event page
@@ -94,6 +108,158 @@ def safe_click_accept_cookies(page):
         pass
 
 
+def scrape_stats_with_selenium(event_id: int, headless=True) -> dict:
+    """
+    Scrape stats page using Selenium with undetected-chromedriver to bypass Cloudflare.
+    Returns dict with top_players and top_teams.
+
+    Note: headless mode doesn't work well with Cloudflare, so we force headless=False
+    """
+    stats_data = {
+        "top_players": [],
+        "top_teams": []
+    }
+
+    if not SELENIUM_AVAILABLE:
+        print("  ⚠️  Selenium não disponível, pulando stats...")
+        return stats_data
+
+    print(f"  🔍 Usando Selenium para extrair stats do evento {event_id}...")
+
+    # Configure undetected Chrome
+    # Force headless=False because Cloudflare detects headless mode
+    options = uc.ChromeOptions()
+    # Don't use headless mode - it gets detected by Cloudflare
+    # if headless:
+    #     options.add_argument('--headless=new')
+    options.add_argument('--disable-blink-features=AutomationControlled')
+    options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-gpu')
+    options.add_argument('--window-size=1920,1080')
+
+    driver = None
+    try:
+        # Create driver with undetected-chromedriver (force headless=False for Cloudflare)
+        driver = uc.Chrome(options=options, headless=False, use_subprocess=False, version_main=None)
+        driver.set_window_size(1920, 1080)
+
+        # Navigate to stats page
+        stats_url = f"{BASE}/stats?event={event_id}"
+        print(f"  🌐 Navegando para: {stats_url}")
+        driver.get(stats_url)
+
+        # Wait for page load
+        time.sleep(5)
+
+        # Check if we hit Cloudflare
+        page_title = driver.title
+        if "Just a moment" in page_title or "Um momento" in page_title:
+            print("  ⚠️  Cloudflare detectado! Aguardando...")
+            time.sleep(30)  # Aumentado de 20 para 30 segundos
+            page_title = driver.title
+
+        if "Just a moment" in page_title or "Um momento" in page_title:
+            print("  ❌ Cloudflare ainda presente. Stats não extraídos.")
+            return stats_data
+
+        print(f"  ✅ Página carregada: {page_title}")
+
+        # Extract top players
+        try:
+            player_boxes = driver.find_elements(By.CSS_SELECTOR, ".top-x-box")
+
+            for i, box in enumerate(player_boxes[:8]):
+                try:
+                    # Check if it's a player box (has .playerPicture)
+                    pic_elems = box.find_elements(By.CSS_SELECTOR, ".playerPicture")
+                    if not pic_elems:
+                        continue
+
+                    # Find player name
+                    name_elem = box.find_element(By.CSS_SELECTOR, "a.name")
+                    player_name = name_elem.text.strip()
+                    player_url = name_elem.get_attribute("href")
+
+                    # Find rating
+                    rating_elem = box.find_element(By.CSS_SELECTOR, ".rating .bold")
+                    rating = rating_elem.text.strip()
+
+                    # Find maps played (if available)
+                    maps = None
+                    try:
+                        maps_elem = box.find_element(By.CSS_SELECTOR, ".average .bold")
+                        maps = maps_elem.text.strip()
+                    except:
+                        pass
+
+                    player_data = {
+                        "name": player_name,
+                        "url": player_url,
+                        "rating": rating
+                    }
+                    if maps:
+                        player_data["maps"] = maps
+
+                    stats_data["top_players"].append(player_data)
+                except Exception:
+                    continue
+        except Exception as e:
+            print(f"  ⚠️  Erro extraindo players: {e}")
+
+        # Extract top teams
+        try:
+            all_boxes = driver.find_elements(By.CSS_SELECTOR, ".top-x-box")
+
+            for box in all_boxes:
+                try:
+                    # Check if it's NOT a player box (no .playerPicture)
+                    pic_elems = box.find_elements(By.CSS_SELECTOR, ".playerPicture")
+                    if pic_elems:
+                        continue  # Skip player boxes
+
+                    # Try to find team info
+                    name_elem = box.find_element(By.CSS_SELECTOR, "a.name")
+                    team_name = name_elem.text.strip()
+                    team_url = name_elem.get_attribute("href")
+
+                    # Find logo
+                    logo_url = None
+                    try:
+                        logo_elem = box.find_element(By.CSS_SELECTOR, "img.logo")
+                        logo_url = logo_elem.get_attribute("src")
+                    except:
+                        pass
+
+                    team_data = {
+                        "name": team_name,
+                        "url": team_url
+                    }
+                    if logo_url:
+                        team_data["logo"] = logo_url
+
+                    stats_data["top_teams"].append(team_data)
+
+                    # Stop after 8 teams
+                    if len(stats_data["top_teams"]) >= 8:
+                        break
+
+                except Exception:
+                    continue
+        except Exception as e:
+            print(f"  ⚠️  Erro extraindo teams: {e}")
+
+        print(f"  ✅ Stats extraídos: {len(stats_data['top_players'])} players, {len(stats_data['top_teams'])} teams")
+
+    except Exception as e:
+        print(f"  ❌ Erro durante scraping com Selenium: {e}")
+    finally:
+        if driver:
+            driver.quit()
+
+    return stats_data
+
+
 def scrape_overview(event_id: int, event_link: str = None, headless=True):
     """
     event_link: full link from JSON like https://www.hltv.org/events/8067/thunderpick-world-championship-2025
@@ -103,7 +269,7 @@ def scrape_overview(event_id: int, event_link: str = None, headless=True):
         url = event_link  # Usa o link completo do JSON
     else:
         url = BASE + EVENT_PATH.format(id=event_id)  # Fallback (pode não funcionar)
-    
+
     print(f"  🌐 URL overview: {url}")
     for attempt in range(1, RETRY_ATTEMPTS + 1):
         try:
@@ -122,51 +288,94 @@ def scrape_overview(event_id: int, event_link: str = None, headless=True):
 
             safe_click_accept_cookies(page)
             print(f"  ✅ Página carregada, extraindo dados...")
-            
+
             # DEBUG: salva HTML para inspeção
             with open(f"debug_overview_{event_id}.html", "w", encoding="utf-8") as f:
                 f.write(content)
             print(f"  💾 HTML salvo em debug_overview_{event_id}.html")
 
             overview = {"location": None, "prize_pool": None, "teams": None, "start_date": None, "end_date": None,
-                        "map_pool": [], "formats": {}, "related_events": [], "teams_attending": []}
+                        "map_pool": [], "formats": {}, "related_events": [], "teams_attending": [], "image": None}
+
+            # Event logo/image
+            try:
+                event_logo = page.query_selector(".event-hub-header-logo img")
+                if event_logo:
+                    overview["image"] = event_logo.get_attribute("src")
+                    print(f"  🖼️  Logo: {overview['image']}")
+            except Exception:
+                pass
 
             # Event data box (table) - estrutura real: <table class="info"> com <tbody> <td>
             try:
                 # Busca a tabela .info e pega os dados do tbody
                 info_table = page.query_selector("table.info")
                 print(f"  📊 Tabela .info encontrada: {info_table is not None}")
-                
+
                 if info_table:
                     # Extrai dados das células
                     date_cell = info_table.query_selector("td.eventdate")
                     prize_cell = info_table.query_selector("td.prizepool")
                     teams_cell = info_table.query_selector("td.teamsNumber")
                     location_cell = info_table.query_selector("td.location")
-                    
+
                     if date_cell:
-                        date_text = date_cell.inner_text().strip()
-                        print(f"  � Datas extraídas: {date_text}")
-                        overview["start_date"] = date_text
-                        overview["end_date"] = date_text
-                    
+                        # Pega os timestamps Unix dos spans com data-unix
+                        date_spans = date_cell.query_selector_all("span[data-unix]")
+                        if len(date_spans) >= 2:
+                            # Duas datas: start e end
+                            overview["start_unix"] = date_spans[0].get_attribute("data-unix")
+                            overview["end_unix"] = date_spans[1].get_attribute("data-unix")
+                            overview["start_date"] = convert_unix_ms_to_str(overview["start_unix"])
+                            overview["end_date"] = convert_unix_ms_to_str(overview["end_unix"])
+                            print(f"  📅 Datas: {overview['start_date']} - {overview['end_date']}")
+                        elif len(date_spans) == 1:
+                            # Uma data só
+                            overview["start_unix"] = date_spans[0].get_attribute("data-unix")
+                            overview["end_unix"] = overview["start_unix"]
+                            overview["start_date"] = convert_unix_ms_to_str(overview["start_unix"])
+                            overview["end_date"] = overview["start_date"]
+                            print(f"  📅 Data: {overview['start_date']}")
+                        else:
+                            # Fallback: pega o texto visível
+                            date_text = date_cell.inner_text().strip()
+                            overview["start_date"] = date_text
+                            overview["end_date"] = date_text
+                            print(f"  📅 Datas (texto): {date_text}")
+
                     if prize_cell:
                         prize = prize_cell.inner_text().strip()
                         print(f"  💰 Prize pool: {prize}")
                         overview["prize_pool"] = prize
-                    
+
                     if teams_cell:
                         teams = teams_cell.inner_text().strip()
                         print(f"  👥 Teams: {teams}")
                         overview["teams"] = teams
-                    
+
                     if location_cell:
                         location_span = location_cell.query_selector("span.text-ellipsis")
                         if location_span:
                             location = location_span.inner_text().strip()
                             print(f"  🌍 Location: {location}")
                             overview["location"] = location
-                
+
+                        # Extrair tipo de evento da localização
+                        # Formato: "Online Europe" ou "Intl. LAN Sweden" etc
+                        location_full = location_cell.inner_text().strip()
+                        if "Online" in location_full:
+                            overview["type"] = "Online"
+                        elif "LAN" in location_full:
+                            if "Intl." in location_full:
+                                overview["type"] = "LAN"
+                            elif "Reg." in location_full:
+                                overview["type"] = "Regional"
+                            elif "Local" in location_full:
+                                overview["type"] = "Local"
+                            else:
+                                overview["type"] = "LAN"
+                        print(f"  🎮 Type: {overview.get('type', 'Unknown')}")
+
                 # Fallback antigo caso a estrutura mude
                 rows = page.query_selector_all(".event-data tr")
                 print(f"  📊 Fallback: Encontradas {len(rows)} linhas com .event-data tr")
@@ -296,7 +505,7 @@ def scrape_matches_tab(event_id: int, event_link: str = None, headless=True):
         url = event_link + "/matches"  # Adiciona /matches ao link completo
     else:
         url = BASE + EVENT_MATCHES.format(id=event_id)  # Fallback
-    
+
     print(f"  🌐 URL matches: {url}")
     for attempt in range(1, RETRY_ATTEMPTS + 1):
         try:
@@ -314,7 +523,7 @@ def scrape_matches_tab(event_id: int, event_link: str = None, headless=True):
 
             safe_click_accept_cookies(page)
             print(f"  ✅ Página carregada, procurando partidas...")
-            
+
             # DEBUG: salva HTML para inspeção
             with open(f"debug_matches_{event_id}.html", "w", encoding="utf-8") as f:
                 f.write(content)
@@ -524,7 +733,7 @@ def scrape_stats_tab(event_id: int, headless=True):
 
             safe_click_accept_cookies(page)
             print(f"  ✅ Página carregada, extraindo estatísticas...")
-            
+
             # DEBUG: salva HTML
             with open(f"debug_stats_{event_id}.html", "w", encoding="utf-8") as f:
                 f.write(content)
@@ -680,9 +889,9 @@ def build_event_payload(event_obj: dict, headless=True):
     results = scrape_results_tab(event_id_int, headless=headless)
     result["results"] = results
 
-    # Stats
+    # Stats - usando Selenium para bypass do Cloudflare
     print("📈 Fazendo scraping das estatísticas...")
-    stats = scrape_stats_tab(event_id_int, headless=headless)
+    stats = scrape_stats_with_selenium(event_id_int, headless=headless)
     result["stats"] = stats
 
     # status: derive from results presence and bracket completeness
