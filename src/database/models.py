@@ -118,7 +118,6 @@ class Player(Base):
     # Career stats - Rating & Performance
     rating_2_0 = Column(Float)
     kpr = Column(Float)  # Kills per round
-    apr = Column(Float)  # Assists per round
     kast = Column(Float)  # KAST %
     impact = Column(Float)
     adr = Column(Float)  # Average damage per round
@@ -199,7 +198,7 @@ class EventTeam(Base):
 
 
 class TeamPlayer(Base):
-    """Team roster - CLEAN VERSION"""
+    """Team roster with date history - CLEAN VERSION"""
     __tablename__ = 'team_players'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -210,16 +209,17 @@ class TeamPlayer(Base):
     role = Column(String(50))  # 'player', 'coach', 'standin', etc
     is_current = Column(Boolean, default=True)
 
+    # Date history
+    joined_date = Column(Date, nullable=True)  # When player joined this team
+    left_date = Column(Date, nullable=True)    # When player left (null if current)
+
     # Metadata
     created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
     team = relationship("Team", back_populates="roster")
     player = relationship("Player", back_populates="team_history")
 
-    __table_args__ = (
-        UniqueConstraint('team_id', 'player_id', name='uq_team_player'),
-    )
-
     def __repr__(self):
-        return f"<TeamPlayer(team_id={self.team_id}, player_id={self.player_id}, role='{self.role}')>"
+        return f"<TeamPlayer(team_id={self.team_id}, player_id={self.player_id}, role='{self.role}', current={self.is_current})>"

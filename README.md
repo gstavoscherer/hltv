@@ -1,332 +1,233 @@
-# HLTV Data Scraper# HLTV Complete Data Scraper
+# HLTV Data Scraper
 
+Sistema completo e otimizado para VPS para coletar TODOS os dados do HLTV (CS2 competitivo).
 
+## 🎯 O que coleta
 
-Sistema completo de scraping e armazenamento de dados do HLTV (CS2).## 🎯 Sistema Completo de Coleta e Sincronização de Dados HLTV
+### ✅ Dados Completos
 
+- **Eventos** - Torneios (nome, datas, localização, prize pool, tipo)
+- **Times** - Times participantes (nome, país, world rank)
+- **Placements** - Colocação de cada time no evento (1º, 2º, 3º, 4º)
+- **Prizes** - Premiação de cada time
+- **Jogadores** - Perfil completo (nickname, nome real, país, idade, time atual)
+- **Player Stats** - Estatísticas completas:
+  - Rating 2.0, KAST, K/D Ratio, ADR
+  - Total kills, deaths, headshots, maps played
+  - KPR, Impact, Total rounds
+- **Histórico** - Histórico de desempenho dos jogadores por evento
 
+## 🚀 Quick Start
 
-## 📋 Estrutura do ProjetoSistema automatizado para coletar e manter atualizado um banco de dados completo de:
-
-- ✅ Eventos (overview, matches, results, stats)
-
-```- ✅ Times (detalhes, rosters, rankings)
-
-hltv/- ✅ Jogadores (perfis, estatísticas, histórico)
-
-├── database/           # SQLAlchemy models e configuração- ✅ Relacionamentos (times por evento, jogadores por time)
-
-│   ├── __init__.py
-
-│   ├── models.py      # Modelos: Event, Team, Player, EventStats, etc---
-
-│   ├── importer.py    # Importador de dados JSON
-
-│   └── queries.py     # Queries úteis## 🚀 Quick Start
-
-├── archive_events.py       # Scraper de eventos do archive
-
-├── events.py              # Scraper de eventos atuais### Setup Inicial
-
-├── event_scraper.py       # Scraper completo de evento (overview, stats, etc)```bash
-
-├── team_scraper.py        # Scraper de times e rosters# 1. Instalar dependências
-
-├── player_scraper.py      # Scraper de perfil de playerspip install -r requirements.txt
-
-├── player_stats_scraper.py # Scraper de stats individuais de playersplaywright install
-
-├── import_events.py       # Importa eventos do archive para o banco
-
-├── populate_full_flow.py  # SCRIPT PRINCIPAL - Fluxo completo# 2. Inicializar banco de dados
-
-├── manage_db.py          # Gerenciador do banco de dadospython manage_db.py init
-
-└── requirements.txt      # Dependências
-
-```# 3. Migrar schema (adicionar campos de stats)
-
-python migrate_player_stats.py
-
-## 🚀 Setup
-
-# 4. Processar primeiro evento completo
-
-1. **Instalar dependências:**python process_event_full.py 8040
-
-```bash```
-
-python -m venv .venv
-
-source .venv/bin/activate  # Linux/Mac### Comandos Principais
-
-# ou .venv\Scripts\activate  # Windows
-
-pip install -r requirements.txt#### Sincronização Automática (Recomendado)
-
-``````bash
-
-# Sync completo: eventos + times + players
-
-2. **Instalar Playwright:**python sync_data.py --mode all \
-
-```bash    --events-limit 10 \
-
-playwright install chromium    --teams-limit 20 \
-
-```    --players-limit 50
-
-```
-
-3. **Inicializar banco de dados:**
-
-```bash#### Sync por Componente
-
-python manage_db.py init```bash
-
-```# Apenas eventos novos
-
-python sync_data.py --mode events --events-limit 5
-
-## 💾 Database Schema
-
-# Apenas times sem roster
-
-### Tabelas:python sync_data.py --mode teams --teams-limit 10
-
-- **events**: Eventos (id, name, dates, location, prize_pool, type)
-
-- **teams**: Times (id, name, country, world_rank)# Apenas players sem stats
-
-- **players**: Players (id, nickname, country, stats completas)python sync_data.py --mode players --players-limit 30
-
-- **event_stats**: Stats de players por evento (rating, maps)```
-
-- **event_teams**: Relação Many-to-Many entre eventos e times
-
-- **team_players**: Roster dos times (players por time)#### Ver Estatísticas do Banco
+### 1. Instalação (VPS/Linux)
 
 ```bash
+# Instalar Chromium (necessário para scraping)
+sudo pacman -S chromium  # Arch Linux
+# ou
+sudo apt install chromium-browser  # Ubuntu/Debian
 
-Schema limpo e minimalista - apenas dados essenciais.python manage_db.py stats
+# Instalar dependências Python
+pip install -r requirements.txt
 
+# Inicializar banco de dados
+python cli.py init
 ```
 
-## 🔄 Fluxo Completo de População
+### 2. Uso Rápido
+
+#### Opção A: Sincronização Completa Automática (RECOMENDADO) ⚡
+
+```bash
+# Sincroniza TUDO de UMA VEZ: eventos, times, placements, players, stats
+python sync_all.py --limit 3
+
+# Sincronizar apenas um evento específico completo
+python sync_all.py --event 8041
+
+# Com browser visível (debug)
+python sync_all.py --limit 1 --show
+```
+
+#### Opção B: Sincronização Manual (passo a passo)
+
+```bash
+# 1. Sincronizar eventos
+python cli.py events --limit 5
+
+# 2. Sincronizar times de um evento
+python cli.py teams 8041
+
+# 3. Sincronizar jogadores e stats
+python cli.py players --event 8041
+
+# Ver status
+python cli.py status
+```
+
+## 📖 Comandos Disponíveis
+
+### 🔥 `sync_all.py` - Sincronização Completa (NOVO!)
+
+**Este é o comando principal para coletar TODOS os dados.**
+
+```bash
+# Sincronizar tudo automaticamente
+python sync_all.py --limit 5
+
+# Opções disponíveis:
+python sync_all.py --limit 3        # Limitar a 3 eventos (teste)
+python sync_all.py --event 8041     # Apenas um evento específico
+python sync_all.py --show           # Mostrar browser (debug)
+python sync_all.py --init           # Inicializar DB antes de sync
+```
+
+**O que faz:**
+1. ✅ Busca todos os eventos
+2. ✅ Para cada evento:
+   - Busca todos os times participantes
+   - Busca placements (1º, 2º, 3º, 4º)
+   - Busca prizes de cada time
+   - Para cada time:
+     - Busca roster completo
+     - Busca stats completos de cada jogador
+
+### 📋 Comandos CLI individuais
+
+#### `init` - Inicializar banco
+```bash
+python cli.py init
+```
+
+#### `events` - Sincronizar eventos
+```bash
+python cli.py events --limit 10
+```
+
+#### `teams` - Sincronizar times
+```bash
+python cli.py teams 8041
+```
+
+#### `players` - Sincronizar players
+```bash
+python cli.py players --event 8041
+python cli.py players --team 4608
+```
+
+#### `status` - Ver status do banco
+```bash
+python cli.py status
+```
+
+## 🔄 Fluxo Completo
+
+```bash
+# 1. Buscar eventos
+./cli.py events --limit 5
+
+# 2. Ver eventos salvos
+./cli.py status
+
+# 3. Sincronizar times do primeiro evento (use o ID do status)
+./cli.py teams 8041
+
+# 4. Sincronizar jogadores e stats do evento
+./cli.py players --event 8041
+```
+
+## 📊 Estrutura do Banco (Completa!)
+
+```
+events          → Eventos (id, name, start_date, end_date, location, prize_pool, event_type)
+teams           → Times (id, name, country, world_rank)
+players         → Jogadores completo:
+                  - Perfil: id, nickname, real_name, country, age, current_team_id
+                  - Stats: rating_2_0, kast, kd_ratio, headshot_percentage
+                  - Detalhes: total_kills, total_deaths, total_maps, total_rounds
+                  - Performance: kpr, apr, impact, adr
+event_teams     → Relacionamento eventos ↔ times
+                  - Com placement (1º, 2º, 3º, 4º)
+                  - Com prize (premiação)
+team_players    → Histórico de roster dos times
+event_stats     → Stats dos jogadores por evento específico
+```
+
+## 🏗️ Estrutura do Projeto
+
+```
+hltv/
+├── cli.py                 # CLI principal
+├── src/
+│   ├── database/
+│   │   ├── __init__.py   # Configuração do banco
+│   │   └── models.py     # Models SQLAlchemy
+│   └── scrapers/
+│       ├── events.py     # Scraper de eventos
+│       ├── teams.py      # Scraper de times
+│       └── players.py    # Scraper de jogadores
+├── hltv_data.db          # Database SQLite
+└── requirements.txt
+```
+
+## ⚙️ Tecnologias
+
+- **Python 3.10+**
+- **Selenium + ChromeDriver** - Web scraping
+- **SQLAlchemy** - ORM
+- **SQLite** - Database
+
+## 📝 Notas Importantes
+
+### ⚡ Otimizações VPS
+- ✅ Configurado para rodar em VPS sem display
+- ✅ Modo headless otimizado (--headless antigo, mais estável)
+- ✅ Opções anti-detecção configuradas
+- ✅ Rate limiting entre requisições (evita bloqueios)
+- ✅ Binary location do Chromium configurado automaticamente
+
+### 🔧 Performance
+- Por padrão, browser roda em modo headless (invisível)
+- Use `--show` para ver o browser em ação (útil para debug)
+- Delays configurados entre requisições (2-5s)
+- Dados salvos incrementalmente (pode pausar e continuar)
+
+### 📊 Stats Coletados por Jogador
+- ✅ Rating 2.0 (métrica principal de performance)
+- ✅ KAST (Kill, Assist, Survive, Trade %)
+- ✅ K/D Ratio, ADR (Average Damage per Round)
+- ✅ Headshot %, Total Kills/Deaths
+- ✅ Maps played, Rounds played
+- ✅ KPR (Kills per Round), Impact
+
+### 🎯 Use Cases
+- Análise de performance de jogadores
+- Tracking de histórico de times
+- Identificação de talentos
+- Análise estatística avançada
+- Machine Learning com dados competitivos
+
+## 🚨 Troubleshooting
+
+### Chrome/Chromium não encontrado
+```bash
+# Instalar Chromium
+sudo pacman -S chromium  # Arch
+sudo apt install chromium-browser  # Ubuntu/Debian
+```
+
+### Erro de timeout
+- Use `--show` para verificar se está sendo bloqueado
+- Aumentar delays no código se necessário
+- HLTV pode ter proteção Cloudflare ativa
+
+### Stats não aparecem
+- Verifique se o scraper completou sem erros
+- Use `python cli.py status` para ver quantos registros existem
+- Re-sync com `python sync_all.py --event <ID>`
 
 ---
 
-```bash
+**Desenvolvido para coleta e análise completa de dados do CS2 competitivo** 🎯
 
-# Importar eventos do archive## 📊 Dados Coletados
-
-python import_events.py 8040 8393 8718
-
-### Por Jogador:
-
-# Rodar fluxo completo (recomendado)- ✅ Total Kills, Deaths, K/D Ratio
-
-python populate_full_flow.py <num_events> <num_players_with_full_stats>- ✅ Headshot %, Maps played, Rounds played
-
-- ✅ Rating 2.0, KPR, ADR, KAST, Impact (em desenvolvimento)
-
-# Exemplo: 3 eventos, 5 players com stats completas por evento- ✅ Time atual e histórico de times
-
-python populate_full_flow.py 3 5- ✅ Histórico de matches e eventos
-
-```
-
-### Por Time:
-
-### O que o fluxo faz:- ✅ Nome, país, world ranking
-
-- ✅ Logo, URL do perfil
-
-1. **Busca eventos do banco** - Eventos previamente importados- ✅ Roster completo (5 jogadores + coach)
-
-2. **Scrape event stats** - Top players do evento (Selenium/Cloudflare bypass)- ✅ Relacionamento com eventos
-
-3. **Cria players e event_stats** - Players básicos + rating/maps por evento
-
-4. **TODO: Team rosters** - Extrai times e rosters (em implementação)### Por Evento:
-
-5. **Scrape player stats** - Stats individuais completas dos top N players- ✅ Nome, datas, localização, prize pool
-
-- ✅ Times participantes
-
-### Stats coletadas por player:- ✅ Matches e resultados
-
-- Basic: nickname, country- ✅ Estatísticas dos jogadores
-
-- Stats: rating_2_0, kpr, apr, kast, impact, adr
-
-- Totals: total_kills, total_deaths, kd_ratio, headshot_percentage---
-
-- Play: total_maps, total_rounds
-
-## ⚙️ Automação (Cron)
-
-## 🛠️ Comandos Úteis
-
-### Configurar Sync Automático a Cada 2 Horas
-
-```bash
-
-# Ver estatísticas do banco```bash
-
-python manage_db.py stats# 1. Tornar script executável
-
-chmod +x schedule_sync.sh
-
-# Resetar banco (cuidado!)
-
-python manage_db.py drop# 2. Adicionar ao cron
-
-python manage_db.py initcrontab -e
-
-
-
-# Importar eventos específicos do archive# 3. Adicionar linha:
-
-python import_events.py <event_id1> <event_id2> ...0 */2 * * * /Users/gustavoscherer/Workspace/hltv/schedule_sync.sh >> /Users/gustavoscherer/Workspace/hltv/sync.log 2>&1
-
-```
-
-# 4. Ver logs
-
-## 🔍 Scrapers Individuaistail -f sync.log
-
-```
-
-### Archive Events
-
-```bash---
-
-python archive_events.py
-
-```## 📚 Documentação Completa
-
-Retorna lista de eventos históricos do HLTV archive.
-
-- **[PROGRESS.md](PROGRESS.md)** - Histórico de desenvolvimento
-
-### Event Scraper- **[PHASE2_TEAMS_PLAYERS.md](PHASE2_TEAMS_PLAYERS.md)** - Sistema de times e rosters
-
-```python- **[PHASE3_ENHANCED_STATS.md](PHASE3_ENHANCED_STATS.md)** - Stats avançadas e sync
-
-from event_scraper import scrape_stats_with_selenium- **[STATUS.md](STATUS.md)** - Status atual do projeto
-
-stats = scrape_stats_with_selenium(8040, headless=True)
-
-```---
-
-Scrape stats de um evento (usa Selenium para bypass do Cloudflare).
-
-## 🎯 Event Scraper (Legacy)
-
-### Team Scraper
-
-```pythonObjetivo
-
-from team_scraper import scrape_team_details--------
-
-team = scrape_team_details(5995, headless=True)  # LiquidScript `event_scraper.py` para coletar dados detalhados de um evento HLTV (overview, matches, results, stats).
-
-```
-
-Scrape detalhes do time + roster atual.Pré-requisitos
-
---------------
-
-### Player Stats Scraper- Python 3.10+
-
-```python- Playwright + browsers
-
-from player_stats_scraper import scrape_player_full_stats  - Instalar dependências:
-
-stats = scrape_player_full_stats(21167, headless=True)  # donk    ```
-
-```    python -m pip install -r requirements.txt
-
-Scrape stats completas de um player individual.    playwright install
-
-    ```
-
-## ⚙️ Tecnologias  - `requirements.txt` deve conter pelo menos:
-
-    playwright
-
-- **Python 3.13**    (ou instale via `pip install playwright`)
-
-- **SQLAlchemy 2.0** - ORM
-
-- **SQLite** - DatabaseComo rodar
-
-- **Playwright** - Web scraping (páginas normais)---------
-
-- **Selenium + undetected-chromedriver** - Bypass Cloudflare (stats)Exemplo:
-
-- **BeautifulSoup4** - HTML parsingpython event_scraper.py 8067
-
-
-
-## 📊 Status AtualPara abrir navegadores visíveis (útil para debug/evitar Cloudflare):
-
-python event_scraper.py --visible 8067
-
-✅ **Completo:**
-
-- Database schema limpoO script cria `hltv_event_<ID>_full.json` com a estrutura:
-
-- Scrapers funcionais- event_id, name, base_link
-
-- Import de eventos- overview: location, prize_pool, teams, start/end, map_pool, formats, related_events, teams_attending, brackets (quando aplicável)
-
-- Event stats + player basic info- matches: itens agendados (da aba /matches)
-
-- Player stats individuais completas- results: resultados consolidados (da rota /results?event=)
-
-- stats: top_players, top_teams (da rota /stats?event=)
-
-⏳ **Em Progresso:**- status: heurística simples ("upcoming", "ongoing_or_some_results", "finished_or_stats_available")
-
-- Extração automática de times do evento
-
-- Team rosters completosComportamento e notas
-
----------------------
-
-## 🤝 Contribuindo- O scraper abre um novo Chromium para cada aba (overview, matches, results, stats). Isso evita ser bloqueado por navegações internas (hl tv bloqueia navegações prolongadas).
-
-- Existe um detector de Cloudflare refinado (`is_cloudflare_page`) que evita falsos positivos removendo gatilhos simples — somente considera realidade se 2+ sinais fortes aparecerem.
-
-Projeto em desenvolvimento ativo. Sugestões e PRs são bem-vindos!- Se Cloudflare for detectado ao acessar `/stats`, o scraper tenta abrir novamente até `RETRY_ATTEMPTS` vezes com um pequeno backoff.
-
-- Delays fixos entre carregamentos (`DELAY_BETWEEN_NAV`) ajudam o JS do site a rodar e reduzem a chance de bloqueio.
-
-## 📝 Notas- Se quiser integrar isso em um pipeline:
-
-  - Rode o `events.py` para coletar eventos (você já tem esse JSON).
-
-- **Cloudflare**: Stats pages requerem Selenium (undetected-chromedriver)  - Use `event_scraper.build_event_payload(event_obj)` ou rode `event_scraper.py <id>` para enriquecer o evento.
-
-- **Rate Limiting**: 3-5s entre requests para evitar ban  - Salve/normalize no banco.
-
-- **Headless Mode**: Stats scraper pode precisar de headless=False em alguns casos
-
-- **Database**: SQLite para desenvolvimento, pode migrar para PostgreSQL em produçãoProblemas conhecidos
-
--------------------
-
----- Cloudflare ainda pode bloquear em ambientes sem headful browsing. Para debug, use `--visible`.
-
-- Seletores do HLTV mudam ocasionalmente; se algo parar de extrair, cheque os seletores (ex.: `.event-data`, `.top-x-box`, `.results-sublist`).
-
-**Desenvolvido para coleta e análise de dados do CS2 competitivo** 🎯- Bracket JSON às vezes está HTML-escaped; o scraper tenta decodificar `&quot;` para `"`.
-
-
-Se quiser, eu ajusto:
-- output para SQLite direto,
-- parallelização controlada (fila / workers),
-- rotação de proxies / headers,
-- ou transformações adicionais de players/teams/achievements.
+**Sistema otimizado para VPS e produção!** 🚀
