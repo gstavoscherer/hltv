@@ -1,5 +1,6 @@
 """Team scraper for HLTV with retry system."""
 
+import os
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -11,12 +12,15 @@ from selenium.common.exceptions import (
 )
 import time
 
+from . import selenium_helpers
+
 
 # ==========================
 # DRIVER CREATOR
 # ==========================
 def create_driver(headless=True):
     """Create and configure Chrome driver."""
+    selenium_helpers.acquire_slot()
     options = webdriver.ChromeOptions()
 
     if headless:
@@ -40,19 +44,31 @@ def create_driver(headless=True):
     # Set user agent to avoid detection
     options.add_argument('--user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
 
-    driver = webdriver.Chrome(options=options)
-    driver.execute_script(
-        "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
-    )
+    last_error = None
+    for attempt in range(1, 4):
+        try:
+            driver = webdriver.Chrome(options=options)
+            break
+        except Exception as exc:
+            last_error = exc
+            if attempt < 3:
+                time.sleep(attempt)
+            else:
+                selenium_helpers.release_slot()
+                raise last_error
+
+    driver = selenium_helpers.wrap_quit(driver)
+    try:
+        driver.execute_script(
+            "Object.defineProperty(navigator, 'webdriver', {get: () => undefined, configurable: true})"
+        )
+    except Exception:
+        pass
 
     return driver
 
 
-# ==========================
-# SCRAPE TEAM (WITH RETRIES)
-# ==========================
-def scrape_team(team_id, headless=True, max_retries=3):
-
+def _scrape_team_selenium(team_id, headless=True, max_retries=3):
     attempt = 0
     last_error = None
 
@@ -151,6 +167,13 @@ def scrape_team(team_id, headless=True, max_retries=3):
     print(f"\n❌ Falha final ao coletar time {team_id} após {max_retries} tentativas.")
     print(f"Último erro: {last_error}")
     return None
+
+
+# ==========================
+# SCRAPE TEAM (WITH RETRIES)
+# ==========================
+def scrape_team(team_id, headless=True, max_retries=3):
+    return _scrape_team_selenium(team_id, headless=headless, max_retries=max_retries)
 
 
 # ==========================

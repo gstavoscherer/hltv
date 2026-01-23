@@ -6,6 +6,8 @@ Coleta TODOS os dados: eventos, times, jogadores, stats, placements, prizes.
 
 import argparse
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import os
 from sqlalchemy.orm import Session
 from src.database import init_db, get_session
 from src.database.models import Event, Team, Player, EventTeam, TeamPlayer, EventStats
@@ -14,7 +16,7 @@ from src.scrapers.teams import scrape_team
 from src.scrapers.players import scrape_player
 
 
-def sync_full_event(event_id, session, headless=True):
+def sync_full_event(event_id, session, headless=True, team_workers=24, player_workers=24):
     """
     Sincroniza TODOS os dados de um evento:
     - Detalhes do evento (location, prize_pool)
@@ -61,108 +63,123 @@ def sync_full_event(event_id, session, headless=True):
     print("👥 Etapa 3/5: Sincronizando times e rosters...")
     all_player_ids = []
 
-    for idx, team_id in enumerate(team_ids, 1):
-        print(f"\n[Time {idx}/{len(team_ids)}] Processando time {team_id}...")
+    team_workers = max(1, int(team_workers))
+    with ThreadPoolExecutor(max_workers=team_workers) as executor:
+        futures = {executor.submit(scrape_team, team_id, headless=headless): team_id for team_id in team_ids}
 
-        # Scrape team data
-        team_data = scrape_team(team_id, headless=headless)
+        for idx, future in enumerate(as_completed(futures), 1):
+            team_id = futures[future]
+            print(f"\n[Time {idx}/{len(team_ids)}] Processando time {team_id}...")
 
-        if not team_data:
-            print(f"⚠️  Falha ao coletar time {team_id}")
-            continue
+            try:
+                team_data = future.result()
+            except Exception as e:
+                print(f"⚠️  Falha ao coletar time {team_id}: {e}")
+                continue
 
-        # Save/update team
-        existing_team = session.query(Team).filter_by(id=team_id).first()
+            if not team_data:
+                print(f"⚠️  Falha ao coletar time {team_id}")
+                continue
 
-        if existing_team:
-            for key, value in team_data['team'].items():
-                setattr(existing_team, key, value)
-        else:
-            team = Team(**team_data['team'])
-            session.add(team)
+            # Save/update team
+            existing_team = session.query(Team).filter_by(id=team_id).first()
 
-        # Link team to event with placement/prize
-        event_team = session.query(EventTeam).filter_by(
-            event_id=event_id,
-            team_id=team_id
-        ).first()
+            if existing_team:
+                for key, value in team_data['team'].items():
+                    setattr(existing_team, key, value)
+            else:
+                team = Team(**team_data['team'])
+                session.add(team)
 
-        if not event_team:
-            event_team = EventTeam(event_id=event_id, team_id=team_id)
-            session.add(event_team)
-
-        # Add placement and prize if available
-        if team_id in results_map:
-            event_team.placement = results_map[team_id].get('placement')
-            event_team.prize = results_map[team_id].get('prize')
-            print(f"  📊 Placement: {event_team.placement}, Prize: {event_team.prize}")
-
-        # Save roster
-        for player_data in team_data['roster']:
-            player_id = player_data['player_id']
-
-            # Check if player exists
-            player = session.query(Player).filter_by(id=player_id).first()
-
-            if not player:
-                # Create minimal player entry
-                player = Player(
-                    id=player_id,
-                    nickname=player_data['nickname'],
-                    current_team_id=team_id
-                )
-                session.add(player)
-
-            # Link player to team
-            team_player = session.query(TeamPlayer).filter_by(
-                team_id=team_id,
-                player_id=player_id
+            # Link team to event with placement/prize
+            event_team = session.query(EventTeam).filter_by(
+                event_id=event_id,
+                team_id=team_id
             ).first()
 
-            if not team_player:
-                team_player = TeamPlayer(
+            if not event_team:
+                event_team = EventTeam(event_id=event_id, team_id=team_id)
+                session.add(event_team)
+
+            # Add placement and prize if available
+            if team_id in results_map:
+                event_team.placement = results_map[team_id].get('placement')
+                event_team.prize = results_map[team_id].get('prize')
+                print(f"  📊 Placement: {event_team.placement}, Prize: {event_team.prize}")
+
+            # Save roster
+            for player_data in team_data['roster']:
+                player_id = player_data['player_id']
+
+                # Check if player exists
+                player = session.query(Player).filter_by(id=player_id).first()
+
+                if not player:
+                    # Create minimal player entry
+                    player = Player(
+                        id=player_id,
+                        nickname=player_data['nickname'],
+                        current_team_id=team_id
+                    )
+                    session.add(player)
+
+                # Link player to team
+                team_player = session.query(TeamPlayer).filter_by(
                     team_id=team_id,
-                    player_id=player_id,
-                    is_current=True
-                )
-                session.add(team_player)
+                    player_id=player_id
+                ).first()
 
-            all_player_ids.append(player_id)
+                if not team_player:
+                    team_player = TeamPlayer(
+                        team_id=team_id,
+                        player_id=player_id,
+                        is_current=True
+                    )
+                    session.add(team_player)
 
-        session.commit()
-        time.sleep(1)  # Rate limiting
+                all_player_ids.append(player_id)
+
+            session.commit()
 
     # 4. Sincronizar stats de todos os jogadores
     print(f"\n⚡ Etapa 4/5: Sincronizando stats de {len(set(all_player_ids))} jogadores únicos...")
 
     unique_player_ids = list(set(all_player_ids))
 
-    for idx, player_id in enumerate(unique_player_ids, 1):
-        print(f"[Player {idx}/{len(unique_player_ids)}] Coletando stats do jogador {player_id}...")
+    player_workers = max(1, int(player_workers))
+    with ThreadPoolExecutor(max_workers=player_workers) as executor:
+        futures = {executor.submit(scrape_player, player_id, headless=headless): player_id for player_id in unique_player_ids}
 
-        player_stats = scrape_player(player_id, headless=headless)
+        for idx, future in enumerate(as_completed(futures), 1):
+            player_id = futures[future]
+            print(f"[Player {idx}/{len(unique_player_ids)}] Coletando stats do jogador {player_id}...")
 
-        if not player_stats:
-            print(f"⚠️  Falha ao coletar stats do jogador {player_id}")
-            continue
+            try:
+                player_stats = future.result()
+            except Exception as e:
+                print(f"⚠️  Falha ao coletar stats do jogador {player_id}: {e}")
+                continue
 
-        # Update player with full stats
-        player = session.query(Player).filter_by(id=player_id).first()
+            if not player_stats:
+                print(f"⚠️  Falha ao coletar stats do jogador {player_id}")
+                continue
 
-        if player:
-            for key, value in player_stats.items():
-                if hasattr(player, key):
-                    setattr(player, key, value)
+            # Update player with full stats
+            player = session.query(Player).filter_by(id=player_id).first()
 
-        session.commit()
-        time.sleep(2)  # Rate limiting between players
+            if player:
+                for key, value in player_stats.items():
+                    if hasattr(player, key):
+                        setattr(player, key, value)
+
+            session.commit()
 
     print(f"\n{'='*70}")
     print(f"✅ EVENTO {event_id} SINCRONIZADO COM SUCESSO!")
     print(f"{'='*70}\n")
 
 
-def sync_all_events(limit=None, headless=True):
+def sync_all_events(limit=None, headless=True, team_workers=24, player_workers=24):
     """
     Sincroniza TODOS OS EVENTOS e seus dados completos.
     """
@@ -209,7 +226,7 @@ def sync_all_events(limit=None, headless=True):
             print(f"{'#'*70}")
 
             try:
-                sync_full_event(event.id, session, headless=headless)
+                sync_full_event(event.id, session, headless=headless, team_workers=team_workers, player_workers=player_workers)
             except Exception as e:
                 print(f"\n❌ ERRO ao sincronizar evento {event.id}: {e}")
                 import traceback
@@ -255,6 +272,22 @@ def main():
         help='Mostrar navegador (não usar headless)'
     )
     parser.add_argument(
+        '--workers',
+        type=int,
+        default=int(os.getenv("HLTV_WORKERS", "24")),
+        help='Número de threads para scraping concorrente'
+    )
+    parser.add_argument(
+        '--team-workers',
+        type=int,
+        help='Número de threads para times (override)'
+    )
+    parser.add_argument(
+        '--player-workers',
+        type=int,
+        help='Número de threads para jogadores (override)'
+    )
+    parser.add_argument(
         '--init',
         action='store_true',
         help='Inicializar banco de dados antes de sync'
@@ -268,15 +301,17 @@ def main():
         print("✅ Banco inicializado!\n")
 
     headless = not args.show
+    team_workers = args.team_workers or args.workers
+    player_workers = args.player_workers or args.workers
     session = get_session()
 
     try:
         if args.event:
             # Sync apenas um evento
-            sync_full_event(args.event, session, headless=headless)
+            sync_full_event(args.event, session, headless=headless, team_workers=team_workers, player_workers=player_workers)
         else:
             # Sync todos os eventos
-            sync_all_events(limit=args.limit, headless=headless)
+            sync_all_events(limit=args.limit, headless=headless, team_workers=team_workers, player_workers=player_workers)
     finally:
         session.close()
 

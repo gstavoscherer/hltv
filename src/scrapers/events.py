@@ -6,18 +6,63 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from datetime import datetime
+import os
+import shutil
+import sys
 import time
+
+from . import selenium_helpers
+
+
+def _resolve_chrome_binary():
+    """Return a Chrome/Chromium binary path if one exists on this host."""
+    env_path = os.getenv("CHROME_BINARY")
+    if env_path and os.path.exists(env_path):
+        return env_path
+
+    candidates = []
+    if sys.platform == "darwin":
+        candidates = [
+            "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+            "/Applications/Chromium.app/Contents/MacOS/Chromium",
+            "/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary",
+        ]
+    elif sys.platform.startswith("linux"):
+        candidates = [
+            "/usr/bin/google-chrome",
+            "/usr/bin/google-chrome-stable",
+            "/usr/bin/chromium",
+            "/usr/bin/chromium-browser",
+        ]
+    elif sys.platform.startswith("win"):
+        candidates = [
+            os.path.expandvars(r"%ProgramFiles%\\Google\\Chrome\\Application\\chrome.exe"),
+            os.path.expandvars(r"%ProgramFiles(x86)%\\Google\\Chrome\\Application\\chrome.exe"),
+        ]
+
+    for path in candidates:
+        if path and os.path.exists(path):
+            return path
+
+    for name in ["google-chrome", "google-chrome-stable", "chromium", "chromium-browser", "chrome"]:
+        path = shutil.which(name)
+        if path:
+            return path
+
+    return None
 
 
 def create_driver(headless=True):
     """Create and configure Chrome driver."""
+    selenium_helpers.acquire_slot()
     options = webdriver.ChromeOptions()
 
-    # Explicitly set Chromium binary location
-    options.binary_location = '/usr/bin/chromium'
+    binary = _resolve_chrome_binary()
+    if binary:
+        options.binary_location = binary
 
     if headless:
-        options.add_argument('--headless')  # Using old headless mode for VPS compatibility
+        options.add_argument('--headless=new')
 
     # Essential options for VPS/headless environments
     options.add_argument('--no-sandbox')
@@ -35,52 +80,60 @@ def create_driver(headless=True):
     # Set user agent to avoid detection
     options.add_argument('--user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
 
-    driver = webdriver.Chrome(options=options)
-    driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+    last_error = None
+    for attempt in range(1, 4):
+        try:
+            driver = webdriver.Chrome(options=options)
+            break
+        except Exception as exc:
+            last_error = exc
+            if attempt < 3:
+                time.sleep(attempt)
+            else:
+                selenium_helpers.release_slot()
+                raise last_error
+
+    driver = selenium_helpers.wrap_quit(driver)
+    try:
+        driver.execute_script(
+            "Object.defineProperty(navigator, 'webdriver', {get: () => undefined, configurable: true})"
+        )
+    except Exception:
+        pass
 
     return driver
 
 
-def scrape_events(limit=None, headless=True):
-    """
-    Scrape events from HLTV events page.
-    
-    Args:
-        limit: Maximum number of events to scrape (None for all)
-        headless: Run browser in headless mode
-        
-    Returns:
-        List of event dictionaries
-    """
+def _scrape_events_selenium(limit=None, headless=True):
     driver = create_driver(headless=headless)
     events = []
-    
+
     try:
         print("🌐 Acessando HLTV events page...")
         driver.get("https://www.hltv.org/events")
-        
+
         # Wait for events to load
         wait = WebDriverWait(driver, 15)
         wait.until(EC.presence_of_element_located((By.CLASS_NAME, "events-holder")))
-        
+
         time.sleep(2)  # Extra wait for dynamic content
-        
+
         # Find all event containers
         event_elements = driver.find_elements(By.CSS_SELECTOR, ".big-event, .small-event")
         print(f"📋 Encontrados {len(event_elements)} eventos")
-        
+
         if limit:
             event_elements = event_elements[:limit]
-        
+
         for idx, event_elem in enumerate(event_elements, 1):
             try:
                 # Extract event ID from link (event_elem is already the <a> tag)
                 event_url = event_elem.get_attribute("href")
                 event_id = int(event_url.split('/')[-2]) if event_url else None
-                
+
                 if not event_id:
                     continue
-                
+
                 # Extract event name
                 try:
                     name_elem = event_elem.find_element(By.CSS_SELECTOR, ".big-event-name, .small-event-name")
@@ -88,12 +141,12 @@ def scrape_events(limit=None, headless=True):
                 except NoSuchElementException:
                     # Fallback: get text from the whole element and clean it
                     name = event_elem.text.split('\n')[0].strip()
-                
+
                 # Extract dates
                 date_elem = event_elem.find_element(By.CSS_SELECTOR, "span[data-unix]")
                 start_unix = int(date_elem.get_attribute("data-unix"))
                 start_date = datetime.fromtimestamp(start_unix / 1000).date()
-                
+
                 # Try to get end date (might not exist for all events)
                 end_date = None
                 try:
@@ -101,7 +154,7 @@ def scrape_events(limit=None, headless=True):
                     # Could parse end date from text if needed
                 except:
                     pass
-                
+
                 # Extract location from text-ellipsis span (contains location)
                 location = None
                 try:
@@ -120,7 +173,7 @@ def scrape_events(limit=None, headless=True):
                 # Extract prize pool - not available on event list page
                 # Will be scraped from individual event pages if needed
                 prize_pool = None
-                
+
                 event_data = {
                     'id': event_id,
                     'name': name,
@@ -130,17 +183,17 @@ def scrape_events(limit=None, headless=True):
                     'event_type': event_type,
                     'prize_pool': prize_pool
                 }
-                
+
                 events.append(event_data)
                 print(f"✅ [{idx}/{len(event_elements)}] {name} (ID: {event_id})")
-                
+
             except Exception as e:
                 print(f"❌ Erro ao processar evento {idx}: {e}")
                 continue
-        
+
         print(f"\n✅ Total de eventos coletados: {len(events)}")
         return events
-        
+
     except Exception as e:
         print(f"❌ Erro ao fazer scraping de eventos: {e}")
         return []
@@ -148,7 +201,29 @@ def scrape_events(limit=None, headless=True):
         driver.quit()
 
 
-def get_event_details(event_id, headless=True):
+def get_event_results(event_id, headless=True):
+    """
+    Get event results with team placements and prizes.
+    """
+    print(f"🌐 Buscando resultados do evento {event_id}...")
+    return _get_event_results_selenium(event_id, headless=headless)
+
+
+def scrape_events(limit=None, headless=True):
+    """
+    Scrape events from HLTV events page.
+    
+    Args:
+        limit: Maximum number of events to scrape (None for all)
+        headless: Run browser in headless mode
+        
+    Returns:
+        List of event dictionaries
+    """
+    return _scrape_events_selenium(limit=limit, headless=headless)
+
+
+def _get_event_details_selenium(event_id, headless=True):
     """
     Get detailed event information (location, prize pool, etc.) from event page.
 
@@ -242,7 +317,14 @@ def get_event_details(event_id, headless=True):
         driver.quit()
 
 
-def get_event_teams(event_id, headless=True):
+def get_event_details(event_id, headless=True):
+    """
+    Get detailed event information (location, prize pool, etc.) from event page.
+    """
+    return _get_event_details_selenium(event_id, headless=headless)
+
+
+def _get_event_teams_selenium(event_id, headless=True):
     """
     Get participating teams for a specific event.
 
@@ -292,7 +374,14 @@ def get_event_teams(event_id, headless=True):
         driver.quit()
 
 
-def get_event_results(event_id, headless=True):
+def get_event_teams(event_id, headless=True):
+    """
+    Get participating teams for a specific event.
+    """
+    return _get_event_teams_selenium(event_id, headless=headless)
+
+
+def _get_event_results_selenium(event_id, headless=True):
     """
     Get event results with team placements and prizes.
 

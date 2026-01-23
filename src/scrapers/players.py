@@ -1,23 +1,69 @@
 """Player scraper for HLTV."""
 
+import os
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
+import os
+import shutil
+import sys
 import time
 import re
+
+from . import selenium_helpers
+
+
+def _resolve_chrome_binary():
+    """Return a Chrome/Chromium binary path if one exists on this host."""
+    env_path = os.getenv("CHROME_BINARY")
+    if env_path and os.path.exists(env_path):
+        return env_path
+
+    candidates = []
+    if sys.platform == "darwin":
+        candidates = [
+            "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+            "/Applications/Chromium.app/Contents/MacOS/Chromium",
+            "/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary",
+        ]
+    elif sys.platform.startswith("linux"):
+        candidates = [
+            "/usr/bin/google-chrome",
+            "/usr/bin/google-chrome-stable",
+            "/usr/bin/chromium",
+            "/usr/bin/chromium-browser",
+        ]
+    elif sys.platform.startswith("win"):
+        candidates = [
+            os.path.expandvars(r"%ProgramFiles%\\Google\\Chrome\\Application\\chrome.exe"),
+            os.path.expandvars(r"%ProgramFiles(x86)%\\Google\\Chrome\\Application\\chrome.exe"),
+        ]
+
+    for path in candidates:
+        if path and os.path.exists(path):
+            return path
+
+    for name in ["google-chrome", "google-chrome-stable", "chromium", "chromium-browser", "chrome"]:
+        path = shutil.which(name)
+        if path:
+            return path
+
+    return None
 
 
 def create_driver(headless=True):
     """Create and configure Chrome driver."""
+    selenium_helpers.acquire_slot()
     options = webdriver.ChromeOptions()
 
-    # Explicitly set Chromium binary location
-    options.binary_location = '/usr/bin/chromium'
+    binary = _resolve_chrome_binary()
+    if binary:
+        options.binary_location = binary
 
     if headless:
-        options.add_argument('--headless')  # Using old headless mode for VPS compatibility
+        options.add_argument('--headless=new')
 
     # Essential options for VPS/headless environments
     options.add_argument('--no-sandbox')
@@ -35,8 +81,26 @@ def create_driver(headless=True):
     # Set user agent to avoid detection
     options.add_argument('--user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
 
-    driver = webdriver.Chrome(options=options)
-    driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+    last_error = None
+    for attempt in range(1, 4):
+        try:
+            driver = webdriver.Chrome(options=options)
+            break
+        except Exception as exc:
+            last_error = exc
+            if attempt < 3:
+                time.sleep(attempt)
+            else:
+                selenium_helpers.release_slot()
+                raise last_error
+
+    driver = selenium_helpers.wrap_quit(driver)
+    try:
+        driver.execute_script(
+            "Object.defineProperty(navigator, 'webdriver', {get: () => undefined, configurable: true})"
+        )
+    except Exception:
+        pass
 
     return driver
 
@@ -60,7 +124,7 @@ def parse_stat_value(text):
     return None
 
 
-def scrape_player(player_id, headless=True):
+def _scrape_player_selenium(player_id, headless=True):
     """
     Scrape player information and career stats from HLTV.
 
@@ -209,6 +273,10 @@ def scrape_player(player_id, headless=True):
         return None
     finally:
         driver.quit()
+
+
+def scrape_player(player_id, headless=True):
+    return _scrape_player_selenium(player_id, headless=headless)
 
 
 def scrape_players(player_ids, headless=True):
