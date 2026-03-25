@@ -13,7 +13,8 @@ from .selenium_helpers import create_driver, wait_for_cloudflare, random_delay
 logger = logging.getLogger(__name__)
 
 
-def _scrape_team_selenium(team_id, headless=True, max_retries=3):
+def _scrape_team_selenium(team_id, headless=True, max_retries=3, driver=None):
+    owns_driver = driver is None
     attempt = 0
     last_error = None
 
@@ -21,14 +22,14 @@ def _scrape_team_selenium(team_id, headless=True, max_retries=3):
         attempt += 1
         print(f"\n  Tentativa {attempt}/{max_retries} para time {team_id}...")
 
-        driver = None
         try:
-            driver = create_driver(headless=headless)
+            if owns_driver and driver is None:
+                driver = create_driver(headless=headless)
 
             url = f"https://www.hltv.org/team/{team_id}/placeholder"
             driver.get(url)
             wait_for_cloudflare(driver)
-            random_delay(2.0, 3.0)
+            random_delay(1.0, 2.0)
 
             wait = WebDriverWait(driver, 20)
             wait.until(EC.presence_of_element_located((By.CLASS_NAME, "teamProfile")))
@@ -86,21 +87,30 @@ def _scrape_team_selenium(team_id, headless=True, max_retries=3):
         except Exception as e:
             last_error = e
             logger.warning("Erro na tentativa %d do time %d: %s", attempt, team_id, e)
-            time.sleep(2)
+            time.sleep(2 * attempt)
+
+            if not owns_driver:
+                raise  # let caller handle pool.mark_bad
 
         finally:
-            if driver:
+            if owns_driver and driver and attempt >= max_retries:
                 try:
                     driver.quit()
                 except Exception:
                     pass
 
+    if owns_driver and driver:
+        try:
+            driver.quit()
+        except Exception:
+            pass
+
     logger.error("Falha final ao coletar time %d apos %d tentativas: %s", team_id, max_retries, last_error)
     return None
 
 
-def scrape_team(team_id, headless=True, max_retries=3):
-    return _scrape_team_selenium(team_id, headless=headless, max_retries=max_retries)
+def scrape_team(team_id, headless=True, max_retries=3, driver=None):
+    return _scrape_team_selenium(team_id, headless=headless, max_retries=max_retries, driver=driver)
 
 
 def scrape_teams(team_ids, headless=True):

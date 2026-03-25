@@ -208,7 +208,24 @@ class TestScrapeTeam:
         assert len(result['roster']) == 1
         assert result['roster'][0]['nickname'] == "s1mple"
 
-        mock_driver.quit.assert_called()
+    @patch('src.scrapers.teams.time.sleep')
+    @patch('src.scrapers.teams.WebDriverWait')
+    def test_scrape_team_with_external_driver(self, mock_wait_cls, mock_sleep):
+        from src.scrapers.teams import scrape_team
+
+        mock_driver = MagicMock()
+        mock_wait_cls.return_value.until.return_value = True
+
+        name_mock = MagicMock()
+        name_mock.text = "FaZe Clan"
+        mock_driver.find_element.return_value = name_mock
+        mock_driver.find_elements.return_value = []
+
+        result = scrape_team(100, headless=True, driver=mock_driver)
+
+        assert result is not None
+        # External driver should NOT be quit
+        mock_driver.quit.assert_not_called()
 
 
 class TestParsePlacement:
@@ -265,13 +282,14 @@ class TestScrapePlayerRetry:
         mock_wait = MagicMock()
         mock_wait.until.side_effect = TimeoutException("timeout")
 
-        with patch('src.scrapers.players.WebDriverWait', return_value=mock_wait):
-            result = scrape_player(9999, headless=True, max_retries=2)
+        with patch('src.scrapers.players.wait_for_cloudflare', return_value=True):
+            with patch('src.scrapers.players.WebDriverWait', return_value=mock_wait):
+                result = scrape_player(9999, headless=True, max_retries=2)
 
         assert result is None
-        # Should have created driver twice (2 retries)
-        assert mock_create_driver.call_count == 2
-        assert mock_driver.quit.call_count == 2
+        # Driver is created once and reused for retries, quit once at the end
+        assert mock_create_driver.call_count == 1
+        mock_driver.quit.assert_called()
 
 
 class TestScrapePlayer:
@@ -309,5 +327,3 @@ class TestScrapePlayer:
         assert result['id'] == 7998
         assert result['nickname'] == 's1mple'
         assert result['total_kills'] == 35647
-
-        mock_driver.quit.assert_called()

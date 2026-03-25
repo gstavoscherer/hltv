@@ -139,30 +139,38 @@ def _extract_player_data(driver, player_id):
     return player_data
 
 
-def _scrape_player_selenium(player_id, headless=True, max_retries=3):
-    """Scrape player with retry logic and Cloudflare bypass."""
+def _scrape_player_selenium(player_id, headless=True, max_retries=3, driver=None):
+    """Scrape player with retry logic and Cloudflare bypass.
+
+    If ``driver`` is provided, reuses it (no create/quit). On Cloudflare
+    block the caller's driver is marked for replacement via the pool.
+    """
+    owns_driver = driver is None
     attempt = 0
     last_error = None
+    cf_timeout = 20  # progressive: 20, 30, 45
 
     while attempt < max_retries:
         attempt += 1
-        driver = None
-
         try:
-            driver = create_driver(headless=headless)
+            if owns_driver and driver is None:
+                driver = create_driver(headless=headless)
+
             url = f"https://www.hltv.org/stats/players/{player_id}/placeholder"
 
             if attempt > 1:
                 print(f"    Tentativa {attempt}/{max_retries} para jogador {player_id}...")
 
             driver.get(url)
-            wait_for_cloudflare(driver, timeout=20)
-            random_delay(2.0, 4.0)
+            cf_ok = wait_for_cloudflare(driver, timeout=cf_timeout)
 
-            wait = WebDriverWait(driver, 30)
-            wait.until(EC.presence_of_element_located((By.CLASS_NAME, "stats-row")))
+            if not cf_ok:
+                raise TimeoutException(f"Cloudflare nao resolveu em {cf_timeout}s")
 
             random_delay(1.0, 2.0)
+
+            wait = WebDriverWait(driver, 20)
+            wait.until(EC.presence_of_element_located((By.CLASS_NAME, "stats-row")))
 
             player_data = _extract_player_data(driver, player_id)
 
@@ -175,26 +183,42 @@ def _scrape_player_selenium(player_id, headless=True, max_retries=3):
         except TimeoutException:
             last_error = f"Timeout ao carregar pagina de stats do jogador {player_id}"
             logger.warning("Timeout tentativa %d/%d jogador %d", attempt, max_retries, player_id)
-            time.sleep(5 * attempt)
+            cf_timeout = min(cf_timeout + 10, 45)  # progressive timeout
+            time.sleep(3 * attempt)
+
+            # If using external driver and Cloudflare blocked, signal bad driver
+            if not owns_driver:
+                raise  # let caller handle pool.mark_bad
 
         except Exception as e:
             last_error = str(e)
             logger.warning("Erro tentativa %d/%d jogador %d: %s", attempt, max_retries, player_id, e)
-            time.sleep(3 * attempt)
+            time.sleep(2 * attempt)
+
+            if not owns_driver:
+                raise
 
         finally:
-            if driver:
+            # Only quit driver if we created it AND we're done retrying or succeeded
+            if owns_driver and driver and attempt >= max_retries:
                 try:
                     driver.quit()
                 except Exception:
                     pass
 
+    # Clean up owned driver on exhausted retries
+    if owns_driver and driver:
+        try:
+            driver.quit()
+        except Exception:
+            pass
+
     logger.error("Falha ao coletar jogador %d apos %d tentativas: %s", player_id, max_retries, last_error)
     return None
 
 
-def scrape_player(player_id, headless=True, max_retries=3):
-    return _scrape_player_selenium(player_id, headless=headless, max_retries=max_retries)
+def scrape_player(player_id, headless=True, max_retries=3, driver=None):
+    return _scrape_player_selenium(player_id, headless=headless, max_retries=max_retries, driver=driver)
 
 
 def scrape_players(player_ids, headless=True):

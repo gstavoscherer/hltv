@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import os
+import queue
 import random
 import re
 import shutil
@@ -146,6 +147,59 @@ def _make_options():
     return options
 
 
+_DRIVER_LOCK = threading.Lock()
+_PATCHER_READY = False
+
+
+def _ensure_chromedriver():
+    """Pre-patch chromedriver once with the correct version.
+
+    undetected-chromedriver's Patcher can download the wrong version
+    when called concurrently or repeatedly. We call it once upfront
+    and let subsequent uc.Chrome calls reuse the patched binary.
+    """
+    global _PATCHER_READY
+    if _PATCHER_READY:
+        return
+    version = _detect_chrome_version()
+    patcher = uc.Patcher(version_main=version) if version else uc.Patcher()
+    patcher.auto()
+    _PATCHER_READY = True
+    logger.info("Chromedriver patched: %s", getattr(patcher, 'version_full', '?'))
+
+
+def _create_driver_raw(headless=True):
+    """Create a Chrome driver without acquiring a semaphore slot.
+
+    Used internally by DriverPool which manages its own concurrency.
+    A lock serializes creation to prevent undetected-chromedriver from
+    patching the shared binary concurrently (which causes version mismatches).
+    """
+    version = _detect_chrome_version()
+
+    last_error = None
+    for attempt in range(1, 4):
+        try:
+            with _DRIVER_LOCK:
+                _ensure_chromedriver()
+                options = _make_options()
+                kwargs = dict(
+                    options=options,
+                    use_subprocess=True,
+                    headless=headless,
+                )
+                if version:
+                    kwargs['version_main'] = version
+                driver = uc.Chrome(**kwargs)
+            return driver
+        except Exception as exc:
+            last_error = exc
+            logger.warning("_create_driver_raw attempt %d failed: %s", attempt, exc)
+            if attempt < 3:
+                time.sleep(attempt * 3)
+    raise last_error
+
+
 def create_driver(headless=True):
     """Create undetected Chrome driver with Cloudflare bypass.
 
@@ -155,13 +209,10 @@ def create_driver(headless=True):
     This gives Chrome a virtual display so it runs non-headless
     (which bypasses Cloudflare) without needing a real screen.
     """
+    _ensure_chromedriver()
     acquire_slot()
 
     version = _detect_chrome_version()
-
-    # On VPS: use xvfb-run instead of headless for best Cloudflare bypass.
-    # headless=False with xvfb is the most reliable approach.
-    # headless=True is a fallback that may get blocked by Cloudflare.
 
     last_error = None
     for attempt in range(1, 4):
@@ -184,3 +235,125 @@ def create_driver(headless=True):
 
     driver = wrap_quit(driver)
     return driver
+
+
+class DriverPool:
+    """Pool of reusable Chrome drivers for faster batch scraping.
+
+    Drivers are warmed up (Cloudflare cookie resolved) on first use,
+    then reused for subsequent requests — skipping the challenge overhead.
+
+    Usage:
+        with DriverPool(size=3, headless=False) as pool:
+            driver = pool.checkout()
+            try:
+                driver.get(url)
+                ...
+            except Exception:
+                pool.mark_bad(driver)  # will be replaced
+            finally:
+                pool.checkin(driver)
+    """
+
+    def __init__(self, size=3, headless=True):
+        self._size = size
+        self._headless = headless
+        self._queue: queue.Queue = queue.Queue()
+        self._drivers: list = []
+        self._bad: set = set()
+        self._lock = threading.Lock()
+        self._closed = False
+
+    def start(self):
+        """Create all drivers sequentially and warm them up.
+
+        undetected-chromedriver patches a shared binary, so drivers must be
+        created one at a time to avoid version conflicts.
+        """
+        for i in range(self._size):
+            try:
+                d = self._create_one()
+                self._drivers.append(d)
+                self._queue.put(d)
+                logger.info("DriverPool: driver %d/%d ready", i + 1, self._size)
+            except Exception as e:
+                logger.warning("DriverPool: failed to create driver %d: %s", i + 1, e)
+            # Small delay between driver creations to avoid chromedriver patch conflicts
+            if i < self._size - 1:
+                time.sleep(2)
+        if not self._drivers:
+            raise RuntimeError("DriverPool: could not create any drivers")
+        actual = len(self._drivers)
+        if actual < self._size:
+            logger.warning("DriverPool: only %d/%d drivers created, continuing with reduced pool", actual, self._size)
+            self._size = actual
+        return self
+
+    def _create_one(self):
+        """Create a single driver and warm it with HLTV pages."""
+        d = _create_driver_raw(headless=self._headless)
+        # Warm up: resolve Cloudflare and verify driver stability
+        # First nav resolves Cloudflare challenge
+        d.get("https://www.hltv.org/ranking/teams")
+        wait_for_cloudflare(d, timeout=25)
+        random_delay(1.5, 2.5)
+        # Second nav to a stats page — same domain pattern the workers use.
+        # This catches RemoteDisconnected early so the driver is stable.
+        try:
+            d.get("https://www.hltv.org/stats")
+            wait_for_cloudflare(d, timeout=15)
+            random_delay(1.0, 2.0)
+        except Exception as e:
+            logger.warning("DriverPool warmup second nav failed: %s — replacing", e)
+            try:
+                d.quit()
+            except Exception:
+                pass
+            # Create a fresh driver — the first one was unstable
+            d = _create_driver_raw(headless=self._headless)
+            d.get("https://www.hltv.org/ranking/teams")
+            wait_for_cloudflare(d, timeout=25)
+            random_delay(2.0, 3.0)
+        return d
+
+    def checkout(self, timeout=120):
+        """Get a driver from the pool. Blocks until one is available."""
+        d = self._queue.get(timeout=timeout)
+        # If this driver was marked bad, replace it
+        with self._lock:
+            if id(d) in self._bad:
+                self._bad.discard(id(d))
+                self._drivers.remove(d)
+                try:
+                    d.quit()
+                except Exception:
+                    pass
+                d = self._create_one()
+                self._drivers.append(d)
+        return d
+
+    def checkin(self, driver):
+        """Return a driver to the pool for reuse."""
+        if not self._closed:
+            self._queue.put(driver)
+
+    def mark_bad(self, driver):
+        """Mark a driver as stale so it gets replaced on next checkout."""
+        with self._lock:
+            self._bad.add(id(driver))
+
+    def close(self):
+        """Quit all drivers and clean up."""
+        self._closed = True
+        for d in self._drivers:
+            try:
+                d.quit()
+            except Exception:
+                pass
+        self._drivers.clear()
+
+    def __enter__(self):
+        return self.start()
+
+    def __exit__(self, *exc):
+        self.close()

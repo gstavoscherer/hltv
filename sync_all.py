@@ -16,10 +16,11 @@ from src.database.models import Event, Team, Player, EventTeam, TeamPlayer
 from src.scrapers.events import scrape_events, get_event_teams, get_event_results, get_event_details
 from src.scrapers.teams import scrape_team
 from src.scrapers.players import scrape_player
+from src.scrapers.selenium_helpers import DriverPool
 
 logger = logging.getLogger(__name__)
 
-_DEFAULT_WORKERS = int(os.getenv("HLTV_WORKERS", "3"))
+_DEFAULT_WORKERS = int(os.getenv("HLTV_WORKERS", "1"))
 
 
 def sync_full_event(event_id, headless=True, team_workers=3, player_workers=3):
@@ -67,17 +68,41 @@ def sync_full_event(event_id, headless=True, team_workers=3, player_workers=3):
     team_workers = max(1, int(team_workers))
     scraped_teams = {}
 
-    with ThreadPoolExecutor(max_workers=team_workers) as executor:
-        futures = {executor.submit(scrape_team, tid, headless): tid for tid in team_ids}
-
-        for future in as_completed(futures):
-            tid = futures[future]
+    def _scrape_team_pooled(pool, tid):
+        driver = pool.checkout()
+        for attempt in range(3):
             try:
-                team_data = future.result()
-                if team_data:
-                    scraped_teams[tid] = team_data
+                result = scrape_team(tid, headless=headless, max_retries=1, driver=driver)
+                pool.checkin(driver)
+                return result
             except Exception as e:
-                logger.warning("Falha ao coletar time %d: %s", tid, e)
+                logger.warning("Pool team %d attempt %d: %s", tid, attempt + 1, e)
+                if attempt < 2:
+                    time.sleep(2 * (attempt + 1))
+                    # Try to revive driver with a simple navigation
+                    try:
+                        driver.get("https://www.hltv.org")
+                        time.sleep(2)
+                    except Exception:
+                        # Driver is truly dead, replace it
+                        pool.mark_bad(driver)
+                        pool.checkin(driver)
+                        driver = pool.checkout()
+        pool.checkin(driver)
+        return None
+
+    with DriverPool(size=team_workers, headless=headless) as pool:
+        with ThreadPoolExecutor(max_workers=team_workers) as executor:
+            futures = {executor.submit(_scrape_team_pooled, pool, tid): tid for tid in team_ids}
+
+            for future in as_completed(futures):
+                tid = futures[future]
+                try:
+                    team_data = future.result()
+                    if team_data:
+                        scraped_teams[tid] = team_data
+                except Exception as e:
+                    logger.warning("Falha ao coletar time %d: %s", tid, e)
 
     # Save all team data in a single session (thread-safe)
     with session_scope() as session:
@@ -137,17 +162,39 @@ def sync_full_event(event_id, headless=True, team_workers=3, player_workers=3):
     player_workers = max(1, int(player_workers))
     scraped_players = {}
 
-    with ThreadPoolExecutor(max_workers=player_workers) as executor:
-        futures = {executor.submit(scrape_player, pid, headless): pid for pid in unique_player_ids}
-
-        for future in as_completed(futures):
-            pid = futures[future]
+    def _scrape_player_pooled(pool, pid):
+        driver = pool.checkout()
+        for attempt in range(3):
             try:
-                player_stats = future.result()
-                if player_stats:
-                    scraped_players[pid] = player_stats
+                result = scrape_player(pid, headless=headless, max_retries=1, driver=driver)
+                pool.checkin(driver)
+                return result
             except Exception as e:
-                logger.warning("Falha ao coletar stats do jogador %d: %s", pid, e)
+                logger.warning("Pool player %d attempt %d: %s", pid, attempt + 1, e)
+                if attempt < 2:
+                    time.sleep(2 * (attempt + 1))
+                    try:
+                        driver.get("https://www.hltv.org")
+                        time.sleep(2)
+                    except Exception:
+                        pool.mark_bad(driver)
+                        pool.checkin(driver)
+                        driver = pool.checkout()
+        pool.checkin(driver)
+        return None
+
+    with DriverPool(size=player_workers, headless=headless) as pool:
+        with ThreadPoolExecutor(max_workers=player_workers) as executor:
+            futures = {executor.submit(_scrape_player_pooled, pool, pid): pid for pid in unique_player_ids}
+
+            for future in as_completed(futures):
+                pid = futures[future]
+                try:
+                    player_stats = future.result()
+                    if player_stats:
+                        scraped_players[pid] = player_stats
+                except Exception as e:
+                    logger.warning("Falha ao coletar stats do jogador %d: %s", pid, e)
 
     # Save all player stats in a single session
     with session_scope() as session:
