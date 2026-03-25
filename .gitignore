@@ -1,0 +1,20 @@
+# Database
+*.db
+*.db.backup
+
+# Python
+*.pyc
+__pycache__/
+.venv/
+*.egg-info/
+
+# Selenium/Chrome
+chromedriver.log
+
+# Debug dumps
+*_page_source.html
+
+# IDE
+.idea/
+.vscode/
+*.swp

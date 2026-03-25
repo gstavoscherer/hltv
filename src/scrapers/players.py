@@ -1,383 +1,277 @@
 """Player scraper for HLTV."""
 
-import os
-from selenium import webdriver
+import logging
+import re
+import time
+
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException, NoSuchElementException
-import os
-import shutil
-import sys
-import time
-import re
+from selenium.common.exceptions import TimeoutException
 
-from . import selenium_helpers
+from .selenium_helpers import create_driver, wait_for_cloudflare, random_delay
 
-
-def _resolve_chrome_binary():
-    """Return a Chrome/Chromium binary path if one exists on this host."""
-    env_path = os.getenv("CHROME_BINARY")
-    if env_path and os.path.exists(env_path):
-        return env_path
-
-    candidates = []
-    if sys.platform == "darwin":
-        candidates = [
-            "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-            "/Applications/Chromium.app/Contents/MacOS/Chromium",
-            "/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary",
-        ]
-    elif sys.platform.startswith("linux"):
-        candidates = [
-            "/usr/bin/google-chrome",
-            "/usr/bin/google-chrome-stable",
-            "/usr/bin/chromium",
-            "/usr/bin/chromium-browser",
-        ]
-    elif sys.platform.startswith("win"):
-        candidates = [
-            os.path.expandvars(r"%ProgramFiles%\\Google\\Chrome\\Application\\chrome.exe"),
-            os.path.expandvars(r"%ProgramFiles(x86)%\\Google\\Chrome\\Application\\chrome.exe"),
-        ]
-
-    for path in candidates:
-        if path and os.path.exists(path):
-            return path
-
-    for name in ["google-chrome", "google-chrome-stable", "chromium", "chromium-browser", "chrome"]:
-        path = shutil.which(name)
-        if path:
-            return path
-
-    return None
-
-
-def create_driver(headless=True):
-    """Create and configure Chrome driver."""
-    selenium_helpers.acquire_slot()
-    options = webdriver.ChromeOptions()
-
-    binary = _resolve_chrome_binary()
-    if binary:
-        options.binary_location = binary
-
-    if headless:
-        options.add_argument('--headless=new')
-
-    # Essential options for VPS/headless environments
-    options.add_argument('--no-sandbox')
-    options.add_argument('--disable-dev-shm-usage')
-    options.add_argument('--disable-gpu')
-    options.add_argument('--disable-software-rasterizer')
-    options.add_argument('--disable-extensions')
-    options.add_argument('--disable-setuid-sandbox')
-
-    # Anti-detection options
-    options.add_argument('--disable-blink-features=AutomationControlled')
-    options.add_experimental_option("excludeSwitches", ["enable-automation"])
-    options.add_experimental_option('useAutomationExtension', False)
-
-    # Set user agent to avoid detection
-    options.add_argument('--user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
-
-    last_error = None
-    for attempt in range(1, 4):
-        try:
-            driver = webdriver.Chrome(options=options)
-            break
-        except Exception as exc:
-            last_error = exc
-            if attempt < 3:
-                time.sleep(attempt)
-            else:
-                selenium_helpers.release_slot()
-                raise last_error
-
-    driver = selenium_helpers.wrap_quit(driver)
-    try:
-        driver.execute_script(
-            "Object.defineProperty(navigator, 'webdriver', {get: () => undefined, configurable: true})"
-        )
-    except Exception:
-        pass
-
-    return driver
+logger = logging.getLogger(__name__)
 
 
 def parse_stat_value(text):
     """Parse stat value from text, handling various formats."""
     if not text:
         return None
-    
-    # Remove commas and whitespace
+
     text = text.strip().replace(',', '')
-    
-    # Try to extract number
+
     match = re.search(r'[\d.]+', text)
     if match:
         try:
-            value = float(match.group())
-            return value
-        except:
+            return float(match.group())
+        except ValueError:
             return None
     return None
 
 
-def _scrape_player_selenium(player_id, headless=True):
-    """
-    Scrape player information and career stats from HLTV.
+def _extract_player_data(driver, player_id):
+    """Extract player data from an already-loaded page. Returns dict or raises."""
+    player_data = {'id': player_id}
 
-    Args:
-        player_id: HLTV player ID
-        headless: Run browser in headless mode
+    title = driver.title
+    nickname_match = re.search(r"'([^']+)'", title)
+    if nickname_match:
+        player_data['nickname'] = nickname_match.group(1)
 
-    Returns:
-        Dictionary with player data and career stats
-    """
-    driver = create_driver(headless=headless)
+    name_match = re.search(r'^([^\']+)\s+\'', title)
+    if name_match:
+        player_data['real_name'] = name_match.group(1).strip()
 
     try:
-        url = f"https://www.hltv.org/stats/players/{player_id}/placeholder"
-        print(f"🌐 Acessando jogador {player_id}...")
-        driver.get(url)
+        country_elem = driver.find_element(By.CSS_SELECTOR, ".player-summary-stat-box-left-flag .flag")
+        player_data['country'] = country_elem.get_attribute("title")
+    except Exception:
+        pass
 
-        # Wait for stats-row elements to load
-        wait = WebDriverWait(driver, 15)
-        wait.until(EC.presence_of_element_located((By.CLASS_NAME, "stats-row")))
+    try:
+        age_elem = driver.find_element(By.CSS_SELECTOR, ".player-summary-stat-box-left-player-age")
+        age_text = age_elem.text.strip()
+        age_match = re.search(r'(\d+)', age_text)
+        if age_match:
+            player_data['age'] = int(age_match.group(1))
+    except Exception:
+        pass
 
-        time.sleep(3)  # Extra wait for JavaScript to fully load
+    try:
+        team_elem = driver.find_element(By.CSS_SELECTOR, ".playerTeam a")
+        team_url = team_elem.get_attribute("href")
+        if team_url and '/team/' in team_url:
+            player_data['current_team_id'] = int(team_url.split('/')[-2])
+    except Exception:
+        pass
 
-        player_data = {'id': player_id}
+    # Extract career stats from stats-row elements
+    stats_rows = driver.find_elements(By.CLASS_NAME, "stats-row")
 
-        # Extract nickname and real name from page title
-        title = driver.title
-        nickname_match = re.search(r"'([^']+)'", title)
-        if nickname_match:
-            player_data['nickname'] = nickname_match.group(1)
-
-        name_match = re.search(r'^([^\']+)\s+\'', title)
-        if name_match:
-            player_data['real_name'] = name_match.group(1).strip()
-
-        # Extract country from player summary flag
+    for row in stats_rows:
         try:
-            country_elem = driver.find_element(By.CSS_SELECTOR, ".player-summary-stat-box-left-flag .flag")
-            player_data['country'] = country_elem.get_attribute("title")
-        except:
-            pass
+            spans = row.find_elements(By.TAG_NAME, "span")
+            if len(spans) >= 2:
+                label = spans[0].text.strip().lower()
+                value = spans[1].text.strip()
 
-        # Extract age from player summary
-        try:
-            age_elem = driver.find_element(By.CSS_SELECTOR, ".player-summary-stat-box-left-player-age")
-            age_text = age_elem.text.strip()
-            age_match = re.search(r'(\d+)', age_text)
-            if age_match:
-                player_data['age'] = int(age_match.group(1))
-        except:
-            pass
+                if 'total kills' in label:
+                    player_data['total_kills'] = int(value.replace(',', ''))
+                elif 'headshot %' in label:
+                    player_data['headshot_percentage'] = float(value.replace('%', ''))
+                elif 'k/d ratio' in label:
+                    player_data['kd_ratio'] = float(value)
+                elif 'damage / round' in label or 'adr' in label:
+                    player_data['adr'] = float(value)
+                elif 'maps played' in label:
+                    player_data['total_maps'] = int(value.replace(',', ''))
+                elif 'rounds played' in label:
+                    player_data['total_rounds'] = int(value.replace(',', ''))
+                elif 'deaths' in label and 'per' not in label:
+                    player_data['total_deaths'] = int(value.replace(',', ''))
+                elif 'kills / round' in label or 'kpr' in label:
+                    player_data['kpr'] = float(value)
+                elif 'kast' in label:
+                    player_data['kast'] = float(value.replace('%', ''))
+                elif 'impact' in label:
+                    player_data['impact'] = float(value)
+        except Exception:
+            continue
 
-        try:
-            team_elem = driver.find_element(By.CSS_SELECTOR, ".playerTeam a")
-            team_url = team_elem.get_attribute("href")
-            if team_url and '/team/' in team_url:
-                player_data['current_team_id'] = int(team_url.split('/')[-2])
-        except:
-            pass
+    # Extract from summary stat boxes
+    try:
+        stat_wrappers = driver.find_elements(By.CSS_SELECTOR, ".player-summary-stat-box-data-wrapper")
 
-        # Extract career stats from stats-row elements
-        stats_rows = driver.find_elements(By.CLASS_NAME, "stats-row")
-
-        for row in stats_rows:
+        for wrapper in stat_wrappers:
             try:
-                spans = row.find_elements(By.TAG_NAME, "span")
-                if len(spans) >= 2:
-                    label = spans[0].text.strip().lower()
-                    value = spans[1].text.strip()
+                label_elem = wrapper.find_element(By.CSS_SELECTOR, ".player-summary-stat-box-data-text")
+                label = label_elem.text.strip().lower()
 
-                    # Map labels to database fields
-                    if 'total kills' in label:
-                        player_data['total_kills'] = int(value.replace(',', ''))
-                    elif 'headshot %' in label:
-                        player_data['headshot_percentage'] = float(value.replace('%', ''))
-                    elif 'k/d ratio' in label:
-                        player_data['kd_ratio'] = float(value)
-                    elif 'damage / round' in label or 'adr' in label:
-                        player_data['adr'] = float(value)
-                    elif 'maps played' in label:
-                        player_data['total_maps'] = int(value.replace(',', ''))
-                    elif 'rounds played' in label:
-                        player_data['total_rounds'] = int(value.replace(',', ''))
-                    elif 'deaths' in label and 'per' not in label:
-                        player_data['total_deaths'] = int(value.replace(',', ''))
-                    elif 'kills / round' in label or 'kpr' in label:
-                        player_data['kpr'] = float(value)
-                    elif 'kast' in label:
-                        player_data['kast'] = float(value.replace('%', ''))
-                    elif 'impact' in label:
-                        player_data['impact'] = float(value)
-            except:
-                continue
+                value_elem = wrapper.find_element(By.CSS_SELECTOR, ".player-summary-stat-box-data")
+                value_text = value_elem.text.strip().replace('%', '').replace(',', '')
 
-        # Extract Rating 2.0 and KAST from summary stat boxes
-        try:
-            # Find all stat box data wrappers
-            stat_wrappers = driver.find_elements(By.CSS_SELECTOR, ".player-summary-stat-box-data-wrapper")
-
-            for wrapper in stat_wrappers:
-                try:
-                    # Get the label (what stat this is)
-                    label_elem = wrapper.find_element(By.CSS_SELECTOR, ".player-summary-stat-box-data-text")
-                    label = label_elem.text.strip().lower()
-
-                    # Get the value
-                    value_elem = wrapper.find_element(By.CSS_SELECTOR, ".player-summary-stat-box-data")
-                    value_text = value_elem.text.strip().replace('%', '').replace(',', '')
-
-                    if not value_text or value_text == 'N/A':
-                        continue
-
-                    # Map the stat to database field
-                    if 'kast' in label:
-                        player_data['kast'] = float(value_text)
-                    elif 'kpr' in label or 'kills per round' in label:
-                        player_data['kpr'] = float(value_text)
-                    elif 'adr' in label or 'average damage' in label:
-                        player_data['adr'] = float(value_text)
-                    elif 'impact' in label:
-                        player_data['impact'] = float(value_text)
-                except:
+                if not value_text or value_text == 'N/A':
                     continue
-        except:
-            pass
 
-        # Extract Rating 1.0 from the rating box (use as fallback for rating_2_0)
+                if 'kast' in label:
+                    player_data['kast'] = float(value_text)
+                elif 'kpr' in label or 'kills per round' in label:
+                    player_data['kpr'] = float(value_text)
+                elif 'adr' in label or 'average damage' in label:
+                    player_data['adr'] = float(value_text)
+                elif 'impact' in label:
+                    player_data['impact'] = float(value_text)
+            except Exception:
+                continue
+    except Exception:
+        pass
+
+    # Extract Rating
+    try:
+        rating_elem = driver.find_element(By.CSS_SELECTOR, ".player-summary-stat-box-rating-data-text")
+        rating_text = rating_elem.text.strip()
+        if rating_text and rating_text != 'N/A':
+            player_data['rating_2_0'] = float(rating_text)
+    except Exception:
+        pass
+
+    return player_data
+
+
+def _scrape_player_selenium(player_id, headless=True, max_retries=3):
+    """Scrape player with retry logic and Cloudflare bypass."""
+    attempt = 0
+    last_error = None
+
+    while attempt < max_retries:
+        attempt += 1
+        driver = None
+
         try:
-            rating_elem = driver.find_element(By.CSS_SELECTOR, ".player-summary-stat-box-rating-data-text")
-            rating_text = rating_elem.text.strip()
-            if rating_text and rating_text != 'N/A':
-                player_data['rating_2_0'] = float(rating_text)
-        except:
-            pass
+            driver = create_driver(headless=headless)
+            url = f"https://www.hltv.org/stats/players/{player_id}/placeholder"
 
-        nickname = player_data.get('nickname', 'Unknown')
-        rating = player_data.get('rating_2_0', 'N/A')
-        print(f"✅ Jogador: {nickname} | Rating: {rating}")
+            if attempt > 1:
+                print(f"    Tentativa {attempt}/{max_retries} para jogador {player_id}...")
 
-        return player_data
+            driver.get(url)
+            wait_for_cloudflare(driver, timeout=20)
+            random_delay(2.0, 4.0)
 
-    except Exception as e:
-        print(f"❌ Erro ao fazer scraping do jogador {player_id}: {e}")
-        import traceback
-        traceback.print_exc()
-        return None
-    finally:
-        driver.quit()
+            wait = WebDriverWait(driver, 30)
+            wait.until(EC.presence_of_element_located((By.CLASS_NAME, "stats-row")))
+
+            random_delay(1.0, 2.0)
+
+            player_data = _extract_player_data(driver, player_id)
+
+            nickname = player_data.get('nickname', 'Unknown')
+            rating = player_data.get('rating_2_0', 'N/A')
+            print(f"  Jogador: {nickname} | Rating: {rating}")
+
+            return player_data
+
+        except TimeoutException:
+            last_error = f"Timeout ao carregar pagina de stats do jogador {player_id}"
+            logger.warning("Timeout tentativa %d/%d jogador %d", attempt, max_retries, player_id)
+            time.sleep(5 * attempt)
+
+        except Exception as e:
+            last_error = str(e)
+            logger.warning("Erro tentativa %d/%d jogador %d: %s", attempt, max_retries, player_id, e)
+            time.sleep(3 * attempt)
+
+        finally:
+            if driver:
+                try:
+                    driver.quit()
+                except Exception:
+                    pass
+
+    logger.error("Falha ao coletar jogador %d apos %d tentativas: %s", player_id, max_retries, last_error)
+    return None
 
 
-def scrape_player(player_id, headless=True):
-    return _scrape_player_selenium(player_id, headless=headless)
+def scrape_player(player_id, headless=True, max_retries=3):
+    return _scrape_player_selenium(player_id, headless=headless, max_retries=max_retries)
 
 
 def scrape_players(player_ids, headless=True):
-    """
-    Scrape multiple players.
-    
-    Args:
-        player_ids: List of HLTV player IDs
-        headless: Run browser in headless mode
-        
-    Returns:
-        List of player data dictionaries
-    """
+    """Scrape multiple players."""
     results = []
-    
+
     for idx, player_id in enumerate(player_ids, 1):
         print(f"\n[{idx}/{len(player_ids)}] Processando jogador {player_id}...")
-        
+
         player_data = scrape_player(player_id, headless=headless)
-        
+
         if player_data:
             results.append(player_data)
-        
-        # Delay between requests
+
         if idx < len(player_ids):
-            time.sleep(2)
-    
-    print(f"\n✅ Total de jogadores coletados: {len(results)}")
+            time.sleep(3)
+
+    print(f"\nTotal de jogadores coletados: {len(results)}")
     return results
 
 
 def scrape_event_stats(event_id, headless=True):
-    """
-    Scrape player statistics for a specific event.
-    
-    Args:
-        event_id: HLTV event ID
-        headless: Run browser in headless mode
-        
-    Returns:
-        List of player stats for the event
-    """
+    """Scrape player statistics for a specific event."""
     driver = create_driver(headless=headless)
-    
+
     try:
         url = f"https://www.hltv.org/stats/events/{event_id}/placeholder"
-        print(f"🌐 Acessando stats do evento {event_id}...")
+        print(f"  Acessando stats do evento {event_id}...")
         driver.get(url)
-        
+
         wait = WebDriverWait(driver, 10)
         wait.until(EC.presence_of_element_located((By.CLASS_NAME, "stats-table")))
-        
+
         time.sleep(2)
-        
+
         stats = []
-        
-        # Find player rows in stats table
+
         player_rows = driver.find_elements(By.CSS_SELECTOR, ".stats-table tbody tr")
-        
+
         for row in player_rows:
             try:
-                # Get player ID
                 player_link = row.find_element(By.CSS_SELECTOR, "td.playerCol a")
                 player_url = player_link.get_attribute("href")
-                
+
                 if not player_url or '/player/' not in player_url:
                     continue
-                
+
                 player_id = int(player_url.split('/')[-2])
-                
-                # Get stats from columns
+
                 cells = row.find_elements(By.TAG_NAME, "td")
-                
+
                 stat_data = {
                     'player_id': player_id,
                     'event_id': event_id
                 }
-                
-                # Parse stats based on column positions (adjust as needed)
+
                 if len(cells) >= 3:
-                    # Usually: Player | Maps | Rating | K-D
                     try:
                         stat_data['maps_played'] = int(parse_stat_value(cells[1].text) or 0)
                         stat_data['rating'] = parse_stat_value(cells[2].text)
-                        
+
                         if len(cells) >= 4:
                             kd_text = cells[3].text.strip()
                             stat_data['kd_ratio'] = parse_stat_value(kd_text)
-                    except:
+                    except Exception:
                         pass
-                
+
                 stats.append(stat_data)
-                
-            except Exception as e:
+
+            except Exception:
                 continue
-        
-        print(f"✅ Stats do evento {event_id}: {len(stats)} jogadores")
+
+        print(f"  Stats do evento {event_id}: {len(stats)} jogadores")
         return stats
-        
+
     except Exception as e:
-        print(f"❌ Erro ao buscar stats do evento {event_id}: {e}")
+        logger.error("Erro ao buscar stats do evento %d: %s", event_id, e)
         return []
     finally:
         driver.quit()
