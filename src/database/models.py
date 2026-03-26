@@ -296,3 +296,107 @@ class MatchVeto(Base):
 
     def __repr__(self):
         return f"<MatchVeto(match_id={self.match_id}, #{self.veto_number} {self.action} {self.map_name})>"
+
+
+# ============================================================================
+# CARTOLA CS
+# ============================================================================
+
+class User(Base):
+    __tablename__ = 'users'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    username = Column(String(50), nullable=False, unique=True)
+    email = Column(String(255), nullable=False, unique=True)
+    password_hash = Column(String(255), nullable=False)
+    discord_id = Column(String(50), nullable=True, unique=True)
+    balance = Column(Float, default=100.0)
+    created_at = Column(DateTime, server_default=func.now())
+
+    portfolio = relationship("UserPortfolio", back_populates="user", cascade="all, delete-orphan")
+    transactions = relationship("Transaction", back_populates="user", cascade="all, delete-orphan")
+
+    def __repr__(self):
+        return f"<User(id={self.id}, username='{self.username}')>"
+
+
+class PlayerRole(Base):
+    __tablename__ = 'player_roles'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    player_id = Column(Integer, ForeignKey('players.id'), nullable=False)
+    role = Column(String(20), nullable=False)
+    is_primary = Column(Boolean, default=False)
+
+    player = relationship("Player")
+
+    __table_args__ = (
+        UniqueConstraint('player_id', 'role', name='uq_player_role'),
+    )
+
+    def __repr__(self):
+        return f"<PlayerRole(player_id={self.player_id}, role='{self.role}')>"
+
+
+class PlayerMarket(Base):
+    __tablename__ = 'player_market'
+
+    player_id = Column(Integer, ForeignKey('players.id'), primary_key=True)
+    current_price = Column(Float, nullable=False)
+    previous_price = Column(Float)
+    price_change_pct = Column(Float, default=0.0)
+    last_updated = Column(DateTime, server_default=func.now())
+
+    player = relationship("Player")
+
+    def __repr__(self):
+        return f"<PlayerMarket(player_id={self.player_id}, price={self.current_price})>"
+
+
+class PlayerPriceHistory(Base):
+    __tablename__ = 'player_price_history'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    player_id = Column(Integer, ForeignKey('players.id'), nullable=False)
+    price = Column(Float, nullable=False)
+    match_id = Column(Integer, ForeignKey('matches.id'), nullable=True)
+    timestamp = Column(DateTime, server_default=func.now())
+
+    player = relationship("Player")
+    match = relationship("Match")
+
+    def __repr__(self):
+        return f"<PlayerPriceHistory(player_id={self.player_id}, price={self.price})>"
+
+
+class UserPortfolio(Base):
+    __tablename__ = 'user_portfolio'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    player_id = Column(Integer, ForeignKey('players.id'), nullable=False)
+    buy_price = Column(Float, nullable=False)
+    bought_at = Column(DateTime, server_default=func.now())
+
+    user = relationship("User", back_populates="portfolio")
+    player = relationship("Player")
+
+    def __repr__(self):
+        return f"<UserPortfolio(user_id={self.user_id}, player_id={self.player_id})>"
+
+
+class Transaction(Base):
+    __tablename__ = 'transactions'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    player_id = Column(Integer, ForeignKey('players.id'), nullable=False)
+    type = Column(String(10), nullable=False)
+    price = Column(Float, nullable=False)
+    timestamp = Column(DateTime, server_default=func.now())
+
+    user = relationship("User", back_populates="transactions")
+    player = relationship("Player")
+
+    def __repr__(self):
+        return f"<Transaction(user_id={self.user_id}, {self.type} player_id={self.player_id})>"
