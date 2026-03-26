@@ -58,6 +58,10 @@ def sync_full_event(event_id, headless=True, team_workers=3, player_workers=3):
                 event.location = event_details['location']
             if 'prize_pool' in event_details:
                 event.prize_pool = event_details['prize_pool']
+            if 'start_date' in event_details:
+                event.start_date = event_details['start_date']
+            if 'end_date' in event_details:
+                event.end_date = event_details['end_date']
     print("  Evento atualizado com detalhes\n")
 
     if not team_ids:
