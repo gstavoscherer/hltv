@@ -268,6 +268,18 @@ class TestExtractTeamId:
         assert _extract_team_id_from_href("https://www.hltv.org/team/abc/name") is None
 
 
+class TestWorkerConfig:
+    """Default workers should be 2."""
+
+    def test_default_workers(self):
+        import os
+        os.environ.pop('HLTV_WORKERS', None)
+        import importlib
+        import sync_all
+        importlib.reload(sync_all)
+        assert sync_all._DEFAULT_WORKERS == 2
+
+
 class TestPlayerDelayConfig:
     """Player scraper should use shorter delays."""
 

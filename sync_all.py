@@ -20,7 +20,7 @@ from src.scrapers.selenium_helpers import DriverPool, create_driver, random_dela
 
 logger = logging.getLogger(__name__)
 
-_DEFAULT_WORKERS = int(os.getenv("HLTV_WORKERS", "1"))
+_DEFAULT_WORKERS = int(os.getenv("HLTV_WORKERS", "2"))
 
 
 def _filter_players_needing_stats(session, player_ids, force=False):
