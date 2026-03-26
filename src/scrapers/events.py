@@ -16,6 +16,14 @@ from .selenium_helpers import create_driver, wait_for_cloudflare, random_delay
 logger = logging.getLogger(__name__)
 
 
+def _parse_prize_value(text):
+    """Extract prize value like '$250,000' from text."""
+    if not text:
+        return None
+    match = re.search(r'\$[\d,]+', text)
+    return match.group(0) if match else None
+
+
 def _parse_date_range(start_unix_ms, end_unix_ms):
     """Convert unix timestamps (ms) to date objects."""
     start = datetime.fromtimestamp(start_unix_ms / 1000).date() if start_unix_ms else None
@@ -169,26 +177,50 @@ def _get_event_details_selenium(event_id, headless=True, driver=None):
 
         # Extract prize pool
         try:
-            prize_elems = driver.find_elements(By.XPATH, "//*[contains(text(), '$')]")
+            prize = None
+            # Strategy 1: Look in known prize pool containers
+            for selector in [".prizepool", ".prize-pool", ".eventMeta"]:
+                try:
+                    container = driver.find_element(By.CSS_SELECTOR, selector)
+                    prize = _parse_prize_value(container.text)
+                    if prize:
+                        break
+                except Exception:
+                    continue
 
-            max_prize = None
-            max_amount = 0
+            # Strategy 2: Look for elements with "Prize" label nearby
+            if not prize:
+                try:
+                    labels = driver.find_elements(By.XPATH, "//*[contains(text(), 'Prize')]")
+                    for label in labels:
+                        parent = label.find_element(By.XPATH, "..")
+                        prize = _parse_prize_value(parent.text)
+                        if prize:
+                            break
+                except Exception:
+                    pass
 
-            for elem in prize_elems:
-                text = elem.text.strip()
-                match = re.search(r'\$([0-9,]+)', text)
-                if match:
-                    amount_str = match.group(1).replace(',', '')
-                    try:
-                        amount = int(amount_str)
-                        if amount > max_amount:
-                            max_amount = amount
-                            max_prize = match.group(0)
-                    except ValueError:
-                        pass
+            # Strategy 3: Fallback — largest $ value on page
+            if not prize:
+                prize_elems = driver.find_elements(By.XPATH, "//*[contains(text(), '$')]")
+                max_prize = None
+                max_amount = 0
+                for elem in prize_elems:
+                    text = elem.text.strip()
+                    match = re.search(r'\$([0-9,]+)', text)
+                    if match:
+                        amount_str = match.group(1).replace(',', '')
+                        try:
+                            amount = int(amount_str)
+                            if amount > max_amount:
+                                max_amount = amount
+                                max_prize = match.group(0)
+                        except ValueError:
+                            pass
+                prize = max_prize
 
-            if max_prize:
-                details['prize_pool'] = max_prize
+            if prize:
+                details['prize_pool'] = prize
         except Exception as e:
             logger.warning("Nao foi possivel extrair prize_pool: %s", e)
 

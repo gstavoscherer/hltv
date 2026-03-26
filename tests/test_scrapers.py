@@ -268,6 +268,24 @@ class TestExtractTeamId:
         assert _extract_team_id_from_href("https://www.hltv.org/team/abc/name") is None
 
 
+class TestPrizeParsing:
+    def test_parse_prize_value(self):
+        from src.scrapers.events import _parse_prize_value
+        assert _parse_prize_value("$250,000") == "$250,000"
+
+    def test_parse_prize_value_none(self):
+        from src.scrapers.events import _parse_prize_value
+        assert _parse_prize_value("") is None
+
+    def test_parse_prize_value_no_dollar(self):
+        from src.scrapers.events import _parse_prize_value
+        assert _parse_prize_value("no prize here") is None
+
+    def test_parse_prize_value_with_surrounding_text(self):
+        from src.scrapers.events import _parse_prize_value
+        assert _parse_prize_value("Prize Pool: $1,000,000 USD") == "$1,000,000"
+
+
 class TestParseDateRange:
     def test_standard_range(self):
         from src.scrapers.events import _parse_date_range
