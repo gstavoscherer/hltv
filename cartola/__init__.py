@@ -1,0 +1,1 @@
+# CartolaCS — Fantasy CS2
