@@ -268,6 +268,28 @@ class TestExtractTeamId:
         assert _extract_team_id_from_href("https://www.hltv.org/team/abc/name") is None
 
 
+class TestPlayerDelayConfig:
+    """Player scraper should use shorter delays."""
+
+    @patch('src.scrapers.players.time.sleep')
+    @patch('src.scrapers.players.WebDriverWait')
+    @patch('src.scrapers.players.create_driver')
+    def test_default_delay_is_short(self, mock_create_driver, mock_wait_cls, mock_sleep):
+        from src.scrapers.players import scrape_player
+        import src.scrapers.players as players_mod
+
+        mock_driver = MagicMock()
+        mock_create_driver.return_value = mock_driver
+        mock_wait_cls.return_value.until.return_value = True
+        type(mock_driver).title = PropertyMock(return_value="Test 'nick' Player - HLTV")
+        mock_driver.find_elements.return_value = []
+        mock_driver.find_element.side_effect = Exception("Not found")
+
+        with patch.object(players_mod, 'random_delay') as mock_delay:
+            scrape_player(9999, headless=True)
+            mock_delay.assert_called_once_with(0.5, 1.5)
+
+
 class TestFilterPlayersNeedingStats:
     """Filter out players that already have complete stats."""
 

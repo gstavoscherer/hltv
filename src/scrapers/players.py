@@ -167,7 +167,7 @@ def _scrape_player_selenium(player_id, headless=True, max_retries=3, driver=None
             if not cf_ok:
                 raise TimeoutException(f"Cloudflare nao resolveu em {cf_timeout}s")
 
-            random_delay(1.0, 2.0)
+            random_delay(0.5, 1.5)
 
             wait = WebDriverWait(driver, 20)
             wait.until(EC.presence_of_element_located((By.CLASS_NAME, "stats-row")))
@@ -234,7 +234,7 @@ def scrape_players(player_ids, headless=True):
             results.append(player_data)
 
         if idx < len(player_ids):
-            time.sleep(3)
+            time.sleep(1)
 
     print(f"\nTotal de jogadores coletados: {len(results)}")
     return results
