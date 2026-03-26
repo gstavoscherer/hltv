@@ -65,17 +65,20 @@ export default function TeamDetail() {
             </tr>
           </thead>
           <tbody>
-            {roster.map(p => (
-              <tr key={p.id || p.player_id}>
-                <td><Link to={`/players/${p.id || p.player_id}`}>{p.nickname || p.player_name || '--'}</Link></td>
-                <td style={{ color: 'var(--text-secondary)' }}>{p.real_name || '--'}</td>
-                <td>{p.country || '--'}</td>
-                <td>{p.role || '--'}</td>
-                <td className={`numeric ${ratingClass(p.rating_2_0)}`}>{fmt(p.rating_2_0)}</td>
-                <td className="numeric">{fmt(p.kd_ratio)}</td>
-                <td className="numeric">{fmt(p.adr, 1)}</td>
-              </tr>
-            ))}
+            {roster.map(r => {
+              const p = r.player || r
+              return (
+                <tr key={p.id || r.player_id}>
+                  <td><Link to={`/players/${p.id}`}>{p.nickname || '--'}</Link></td>
+                  <td style={{ color: 'var(--text-secondary)' }}>{p.real_name || '--'}</td>
+                  <td>{p.country || '--'}</td>
+                  <td>{r.role || '--'}</td>
+                  <td className={`numeric ${ratingClass(p.rating_2_0)}`}>{fmt(p.rating_2_0)}</td>
+                  <td className="numeric">{fmt(p.kd_ratio)}</td>
+                  <td className="numeric">{fmt(p.adr, 1)}</td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       )}

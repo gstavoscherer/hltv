@@ -33,15 +33,23 @@ export default function MatchDetail() {
   const vetos = match.vetos || []
   const currentMap = maps[activeMap]
 
-  const isTeam1Winner = match.winner_name === match.team1_name
-  const isTeam2Winner = match.winner_name === match.team2_name
+  const team1Name = match.team1?.name || 'TBD'
+  const team2Name = match.team2?.name || 'TBD'
+  const team1Id = match.team1?.id
+  const team2Id = match.team2?.id
+  const winnerName = match.winner?.name
+  const eventName = match.event?.name
+  const eventId = match.event?.id
+
+  const isTeam1Winner = winnerName === team1Name
+  const isTeam2Winner = winnerName === team2Name
 
   return (
     <div>
       <div className="page-header">
         <p style={{ marginBottom: 8 }}>
-          {match.event_name && (
-            <Link to={`/events/${match.event_id}`}>{match.event_name}</Link>
+          {eventName && (
+            <Link to={`/events/${eventId}`}>{eventName}</Link>
           )}
           {' '}
           {match.best_of ? `- BO${match.best_of}` : ''}
@@ -49,7 +57,7 @@ export default function MatchDetail() {
           {match.stars ? <span className="stars">{'★'.repeat(match.stars)}</span> : ''}
         </p>
         <h1 style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-          <span>{match.team1_name || 'TBD'}</span>
+          <Link to={`/teams/${team1Id}`} style={{ color: 'inherit', textDecoration: 'none' }}>{team1Name}</Link>
           <span style={{
             fontSize: 32,
             fontWeight: 700,
@@ -61,7 +69,7 @@ export default function MatchDetail() {
             {' - '}
             <span className={isTeam2Winner ? 'score-winner' : 'score-loser'}>{match.score2 ?? 0}</span>
           </span>
-          <span>{match.team2_name || 'TBD'}</span>
+          <Link to={`/teams/${team2Id}`} style={{ color: 'inherit', textDecoration: 'none' }}>{team2Name}</Link>
         </h1>
         <p>{formatDate(match.date)}</p>
       </div>
@@ -89,8 +97,8 @@ export default function MatchDetail() {
                 onClick={() => setActiveMap(i)}
               >
                 {m.map_name || `Map ${i + 1}`}
-                {m.score_team1 != null && m.score_team2 != null && (
-                  <span style={{ marginLeft: 6 }}>({m.score_team1}-{m.score_team2})</span>
+                {m.team1_score != null && m.team2_score != null && (
+                  <span style={{ marginLeft: 6 }}>({m.team1_score}-{m.team2_score})</span>
                 )}
               </button>
             ))}
@@ -99,38 +107,39 @@ export default function MatchDetail() {
           {currentMap && (
             <div>
               <div className="map-score-header">
-                <span>{match.team1_name}</span>
+                <span>{team1Name}</span>
                 <span className="map-team-score" style={{
-                  color: (currentMap.score_team1 ?? 0) > (currentMap.score_team2 ?? 0)
+                  color: (currentMap.team1_score ?? 0) > (currentMap.team2_score ?? 0)
                     ? 'var(--accent-green)' : 'var(--text-muted)'
                 }}>
-                  {currentMap.score_team1 ?? 0}
+                  {currentMap.team1_score ?? 0}
                 </span>
                 <span style={{ color: 'var(--text-muted)' }}>-</span>
                 <span className="map-team-score" style={{
-                  color: (currentMap.score_team2 ?? 0) > (currentMap.score_team1 ?? 0)
+                  color: (currentMap.team2_score ?? 0) > (currentMap.team1_score ?? 0)
                     ? 'var(--accent-green)' : 'var(--text-muted)'
                 }}>
-                  {currentMap.score_team2 ?? 0}
+                  {currentMap.team2_score ?? 0}
                 </span>
-                <span>{match.team2_name}</span>
+                <span>{team2Name}</span>
               </div>
 
               {currentMap.player_stats && currentMap.player_stats.length > 0 ? (
                 <>
                   <MapStatsTable
-                    stats={currentMap.player_stats.filter(s => s.team_name === match.team1_name || s.team_id === match.team1_id)}
-                    teamName={match.team1_name}
+                    stats={currentMap.player_stats.filter(s => {
+                      const tid = s.team?.id || s.team_id
+                      return tid === team1Id
+                    })}
+                    teamName={team1Name}
                   />
                   <MapStatsTable
-                    stats={currentMap.player_stats.filter(s => s.team_name === match.team2_name || s.team_id === match.team2_id)}
-                    teamName={match.team2_name}
+                    stats={currentMap.player_stats.filter(s => {
+                      const tid = s.team?.id || s.team_id
+                      return tid === team2Id
+                    })}
+                    teamName={team2Name}
                   />
-                  {/* If we can't split by team, show all */}
-                  {currentMap.player_stats.filter(s => s.team_name === match.team1_name || s.team_id === match.team1_id).length === 0 &&
-                   currentMap.player_stats.filter(s => s.team_name === match.team2_name || s.team_id === match.team2_id).length === 0 && (
-                    <MapStatsTable stats={currentMap.player_stats} />
-                  )}
                 </>
               ) : (
                 <p style={{ color: 'var(--text-muted)' }}>No player stats for this map.</p>

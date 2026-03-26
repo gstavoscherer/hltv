@@ -16,7 +16,7 @@ export default function VetoList({ vetos }) {
     <div className="veto-list">
       {vetos.map((v, i) => (
         <div className="veto-item" key={i}>
-          <span className="veto-team">{v.team_name || '--'}</span>
+          <span className="veto-team">{v.team?.name || v.team_name || '--'}</span>
           <span className={actionClass(v.action)}>{v.action || 'VETO'}</span>
           <span className="veto-map">{v.map_name || '--'}</span>
         </div>

@@ -12,14 +12,18 @@ function renderStars(count) {
 }
 
 export default function MatchCard({ match }) {
-  const isTeam1Winner = match.winner_name === match.team1_name
-  const isTeam2Winner = match.winner_name === match.team2_name
+  const team1Name = match.team1?.name || match.team1_name || 'TBD'
+  const team2Name = match.team2?.name || match.team2_name || 'TBD'
+  const winnerName = match.winner?.name || match.winner_name
+  const eventName = match.event?.name || match.event_name || ''
+  const isTeam1Winner = winnerName === team1Name
+  const isTeam2Winner = winnerName === team2Name
 
   return (
     <Link to={`/matches/${match.id}`} className="match-card">
       <div className="match-teams">
-        <span className={`team-name team-left ${isTeam1Winner ? '' : ''}`}>
-          {match.team1_name || 'TBD'}
+        <span className={`team-name team-left`}>
+          {team1Name}
         </span>
         <div className="match-score">
           <span className={isTeam1Winner ? 'score-winner' : 'score-loser'}>
@@ -31,11 +35,11 @@ export default function MatchCard({ match }) {
           </span>
         </div>
         <span className={`team-name`}>
-          {match.team2_name || 'TBD'}
+          {team2Name}
         </span>
       </div>
       <div className="match-meta">
-        <div className="match-event">{match.event_name || ''}</div>
+        <div className="match-event">{eventName}</div>
         <div className="match-format">
           {match.best_of ? `BO${match.best_of}` : ''}
           {' '}

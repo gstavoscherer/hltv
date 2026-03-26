@@ -289,11 +289,13 @@ def get_player(player_id: int):
         for mps in mps_rows:
             mm = mps.match_map
             match_obj = mm.match if mm else None
+            event_obj = match_obj.event if match_obj else None
             match_stats.append({
                 "map_id": mps.map_id,
                 "map_name": mm.map_name if mm else None,
                 "match_id": mm.match_id if mm else None,
                 "event_id": match_obj.event_id if match_obj else None,
+                "event_name": event_obj.name if event_obj else None,
                 "team_id": mps.team_id,
                 "kills": mps.kills,
                 "deaths": mps.deaths,

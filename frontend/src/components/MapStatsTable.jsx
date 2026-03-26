@@ -34,7 +34,9 @@ export default function MapStatsTable({ stats, teamName }) {
         <tbody>
           {stats.map((s, i) => (
             <tr key={i}>
-              <td>{s.player_name || s.nickname || `Player ${s.player_id}`}</td>
+              <td>
+                {s.player?.nickname || s.player_name || s.nickname || `Player ${s.player_id}`}
+              </td>
               <td className="numeric">{s.kills ?? '--'}</td>
               <td className="numeric">{s.deaths ?? '--'}</td>
               <td className="numeric">{s.assists ?? '--'}</td>

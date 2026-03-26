@@ -74,15 +74,18 @@ export default function EventDetail() {
             </tr>
           </thead>
           <tbody>
-            {teams.map(t => (
-              <tr key={t.id || t.team_id}>
-                <td><Link to={`/teams/${t.id || t.team_id}`}>{t.name || t.team_name}</Link></td>
-                <td>{t.country || '--'}</td>
-                <td className="numeric">{t.world_rank ? `#${t.world_rank}` : '--'}</td>
-                <td className={placementClass(t.placement)}>{t.placement || '--'}</td>
-                <td className="numeric">{t.prize || '--'}</td>
-              </tr>
-            ))}
+            {teams.map(t => {
+              const team = t.team || t
+              return (
+                <tr key={team.id || t.team_id}>
+                  <td><Link to={`/teams/${team.id}`}>{team.name || 'Unknown'}</Link></td>
+                  <td>{team.country || '--'}</td>
+                  <td className="numeric">{team.world_rank ? `#${team.world_rank}` : '--'}</td>
+                  <td className={placementClass(t.placement)}>{t.placement || '--'}</td>
+                  <td className="numeric">{t.prize || '--'}</td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       )}
