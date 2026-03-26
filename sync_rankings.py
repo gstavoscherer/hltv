@@ -66,7 +66,7 @@ def recalculate_all_prices():
                 continue
 
             team = s.query(Team).get(player.current_team_id) if player.current_team_id else None
-            new_fair_price = calculate_initial_price(player, team)
+            new_fair_price = calculate_initial_price(player, team, session=s)
             old_price = market.current_price
 
             # Ajustar preco: mover 20% em direcao ao novo fair price

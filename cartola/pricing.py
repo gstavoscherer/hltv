@@ -6,8 +6,10 @@ Calcula precos iniciais e atualiza precos pos-partida.
 from src.database import session_scope
 from src.database.models import (
     Player, Team, Match, MatchMap, MatchPlayerStats,
-    PlayerMarket, PlayerPriceHistory,
+    PlayerMarket, PlayerPriceHistory, PlayerRole,
+    EventTeam, TeamPlayer,
 )
+from sqlalchemy import or_, func
 from datetime import datetime, timedelta
 
 
@@ -42,19 +44,22 @@ DEFAULT_BO_WEIGHT = 1.0
 WIN_BONUS = 0.03
 DEMAND_MAX = 0.03
 
+IGL_BASE_BONUS = 0.08
+IGL_MAX_BONUS = 0.20
+
 
 # ============================================================================
 # HELPERS
 # ============================================================================
 
 def _get_team_factor(world_rank):
-    """Formula continua: rank 1 = 1.8, rank 10 = 1.35, rank 30 = 1.1, rank 100+ = 1.0.
-    f(rank) = 1.0 + 0.8 * (1/rank)^0.35 — bonus moderado por time."""
+    """Formula continua: rank 1 = 1.35, rank 5 = 1.18, rank 10 = 1.12, rank 30 = 1.05.
+    f(rank) = 1.0 + 0.35 * (1/rank)^0.35 — bonus relevante mas nao dominante."""
     if world_rank is None:
         return DEFAULT_TEAM_FACTOR
     if world_rank < 1:
         world_rank = 1
-    factor = 1.0 + 0.8 * (1 / world_rank) ** 0.35
+    factor = 1.0 + 0.35 * (1 / world_rank) ** 0.35
     return max(factor, DEFAULT_TEAM_FACTOR)
 
 
@@ -128,13 +133,96 @@ def _individual_score(player):
     )
 
 
-def calculate_initial_price(player, team=None):
-    """Preco = individual_score * team_factor * base.
-    Individual domina (~70% do preco), time da bonus moderado (~30%)."""
+def _get_igl_bonus(player_id, team, session):
+    """Bonus pra IGLs baseado em performance do time que lidera.
+    Componentes:
+      - Round win rate (40%): % de rounds ganhos nos matches
+      - Match win rate (30%): % de matches ganhos
+      - Event placements (30%): top 1 = 1.0, top 3 = 0.6, top 8 = 0.3
+    Retorna multiplicador entre IGL_BASE_BONUS e IGL_MAX_BONUS."""
+    is_igl = session.query(PlayerRole).filter_by(
+        player_id=player_id, role='igl'
+    ).first()
+    if not is_igl:
+        return 0.0
+    if not team:
+        return IGL_BASE_BONUS
+
+    tid = team.id
+    score = 0.0
+
+    # Round win rate
+    maps_as_t1 = (session.query(
+        func.coalesce(func.sum(MatchMap.team1_score), 0),
+        func.coalesce(func.sum(MatchMap.team2_score), 0),
+    ).join(Match).filter(Match.team1_id == tid).first())
+
+    maps_as_t2 = (session.query(
+        func.coalesce(func.sum(MatchMap.team2_score), 0),
+        func.coalesce(func.sum(MatchMap.team1_score), 0),
+    ).join(Match).filter(Match.team2_id == tid).first())
+
+    rounds_won = maps_as_t1[0] + maps_as_t2[0]
+    rounds_total = rounds_won + maps_as_t1[1] + maps_as_t2[1]
+
+    if rounds_total > 0:
+        rwr = rounds_won / rounds_total
+        # 50% = 0.0, 55% = 0.5, 60%+ = 1.0
+        rwr_score = _clamp((rwr - 0.50) / 0.10, 0.0, 1.0)
+    else:
+        rwr_score = 0.0
+
+    # Match win rate
+    total_matches = session.query(Match).filter(
+        or_(Match.team1_id == tid, Match.team2_id == tid)
+    ).count()
+    wins = session.query(Match).filter(Match.winner_id == tid).count()
+
+    if total_matches > 0:
+        mwr = wins / total_matches
+        # 50% = 0.0, 65% = 0.5, 80%+ = 1.0
+        mwr_score = _clamp((mwr - 0.50) / 0.30, 0.0, 1.0)
+    else:
+        mwr_score = 0.0
+
+    # Event placements
+    placements = (session.query(EventTeam)
+        .filter_by(team_id=tid)
+        .filter(EventTeam.placement != None)
+        .all())
+
+    if placements:
+        placement_points = 0.0
+        for p in placements:
+            if p.placement == 1:
+                placement_points += 1.0
+            elif p.placement <= 3:
+                placement_points += 0.6
+            elif p.placement <= 8:
+                placement_points += 0.3
+        # Normaliza: avg de pontos por evento, cap em 1.0
+        evt_score = _clamp(placement_points / len(placements), 0.0, 1.0)
+    else:
+        evt_score = 0.0
+
+    # Score combinado (0.0 a 1.0)
+    combined = 0.40 * rwr_score + 0.30 * mwr_score + 0.30 * evt_score
+
+    return IGL_BASE_BONUS + combined * (IGL_MAX_BONUS - IGL_BASE_BONUS)
+
+
+def calculate_initial_price(player, team=None, session=None):
+    """Preco = individual_score^1.5 * (1 + igl_bonus) * team_factor * base.
+    IGLs recebem bonus baseado em performance do time (win rates, placements)."""
     ind = _individual_score(player)
     rank = team.world_rank if team else None
     team_factor = _get_team_factor(rank)
-    price = ind * team_factor * 30
+
+    igl_bonus = 0.0
+    if session:
+        igl_bonus = _get_igl_bonus(player.id, team, session)
+
+    price = (ind ** 1.5) * (1 + igl_bonus) * team_factor * 38
     return _clamp(round(price, 2), MIN_PRICE, MAX_PRICE)
 
 
@@ -151,7 +239,7 @@ def initialize_market():
             if p.current_team_id:
                 team = s.query(Team).get(p.current_team_id)
 
-            price = calculate_initial_price(p, team)
+            price = calculate_initial_price(p, team, session=s)
             s.add(PlayerMarket(
                 player_id=p.id,
                 current_price=price,
@@ -298,7 +386,7 @@ def calculate_long_term(player_id, current_price, session):
         return 0.0
 
     team = session.query(Team).get(player.current_team_id) if player.current_team_id else None
-    fair = calculate_initial_price(player, team)
+    fair = calculate_initial_price(player, team, session=session)
     return (fair - current_price) / current_price * 0.1
 
 
