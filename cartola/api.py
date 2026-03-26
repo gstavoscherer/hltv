@@ -11,11 +11,12 @@ from sqlalchemy import func
 from src.database import session_scope
 from src.database.models import (
     Player, Team, PlayerMarket, PlayerPriceHistory, PlayerRole,
-    User, UserPortfolio, Transaction,
+    User, UserPortfolio, Transaction, Match, TeamPlayer,
 )
 from cartola.auth import (
     hash_password, verify_password, create_token, get_current_user,
 )
+from cartola.analytics import get_h2h, get_roster_stability
 
 router = APIRouter(prefix="/api/cartola", tags=["cartola"])
 
@@ -376,3 +377,35 @@ def ranking_weekly(limit: int = Query(20, ge=1, le=100)):
             })
         ranking.sort(key=lambda x: x["weekly_profit"], reverse=True)
         return ranking[:limit]
+
+
+# ============================================================================
+# ANALYTICS
+# ============================================================================
+
+@router.get("/h2h/{team1_id}/{team2_id}")
+def head_to_head(team1_id: int, team2_id: int):
+    with session_scope() as s:
+        team1 = s.query(Team).get(team1_id)
+        team2 = s.query(Team).get(team2_id)
+        if not team1:
+            raise HTTPException(404, f"Time {team1_id} nao encontrado")
+        if not team2:
+            raise HTTPException(404, f"Time {team2_id} nao encontrado")
+
+        stats = get_h2h(team1_id, team2_id, s)
+        stats["team1"] = {"id": team1.id, "name": team1.name}
+        stats["team2"] = {"id": team2.id, "name": team2.name}
+        return stats
+
+
+@router.get("/team/{team_id}/stability")
+def roster_stability(team_id: int):
+    with session_scope() as s:
+        team = s.query(Team).get(team_id)
+        if not team:
+            raise HTTPException(404, f"Time {team_id} nao encontrado")
+
+        stats = get_roster_stability(team_id, s)
+        stats["team"] = {"id": team.id, "name": team.name}
+        return stats

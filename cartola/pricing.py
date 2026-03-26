@@ -3,6 +3,8 @@ Motor de precificacao do CartolaCS.
 Calcula precos iniciais e atualiza precos pos-partida.
 """
 
+import math
+
 from src.database import session_scope
 from src.database.models import (
     Player, Team, Match, MatchMap, MatchPlayerStats,
@@ -46,6 +48,20 @@ DEMAND_MAX = 0.03
 
 IGL_BASE_BONUS = 0.08
 IGL_MAX_BONUS = 0.20
+
+MIN_PLAYERS_FOR_ZSCORE = 20
+
+ROLE_WEIGHTS = {
+    'default': {'rating': 0.35, 'impact': 0.20, 'kast': 0.15, 'adr': 0.15, 'kd': 0.15},
+    'awp':     {'rating': 0.40, 'impact': 0.20, 'kast': 0.15, 'adr': 0.10, 'kd': 0.15},
+    'entry':   {'rating': 0.30, 'impact': 0.30, 'kast': 0.15, 'adr': 0.15, 'kd': 0.10},
+    'rifler':  {'rating': 0.35, 'impact': 0.20, 'kast': 0.15, 'adr': 0.15, 'kd': 0.15},
+    'lurker':  {'rating': 0.30, 'impact': 0.20, 'kast': 0.20, 'adr': 0.15, 'kd': 0.15},
+    'support': {'rating': 0.30, 'impact': 0.15, 'kast': 0.25, 'adr': 0.15, 'kd': 0.15},
+}
+
+# Cache for stats distribution (reset per session_scope call)
+_stats_cache = {}
 
 
 # ============================================================================
@@ -114,23 +130,128 @@ def _get_player_team_in_match(player_id, match, session):
 # PRECO INICIAL
 # ============================================================================
 
-def _individual_score(player):
-    """Score individual baseado em stats de carreira.
-    Combina rating (40%), impact (20%), KAST (15%), ADR (15%), KD (10%).
-    Resultado ~1.0 pra jogador mediano, ~1.5+ pra elite."""
+def _get_stats_distribution(session):
+    """Calcula mean/stdev de cada stat a partir de todos os jogadores no banco.
+    Resultado cacheado por id(session) pra evitar queries repetidas."""
+    global _stats_cache
+    cache_key = id(session)
+    if cache_key in _stats_cache:
+        return _stats_cache[cache_key]
+
+    stats = ['rating_2_0', 'impact', 'kast', 'adr', 'kd_ratio']
+    result = {}
+
+    for stat_name in stats:
+        col = getattr(Player, stat_name)
+        row = session.query(
+            func.count(col),
+            func.avg(col),
+        ).filter(col.isnot(None)).first()
+
+        count = row[0] or 0
+        mean = float(row[1]) if row[1] is not None else 0.0
+
+        if count >= MIN_PLAYERS_FOR_ZSCORE:
+            # Calculate stdev manually: sqrt(avg((x - mean)^2))
+            variance_row = session.query(
+                func.avg((col - mean) * (col - mean))
+            ).filter(col.isnot(None)).first()
+            variance = float(variance_row[0]) if variance_row[0] is not None else 0.0
+            stdev = math.sqrt(variance) if variance > 0 else 0.0
+        else:
+            stdev = 0.0
+
+        result[stat_name] = {'mean': mean, 'stdev': stdev, 'count': count}
+
+    _stats_cache[cache_key] = result
+    return result
+
+
+def _get_player_role_weights(player_id, session):
+    """Retorna weight profile baseado na role primaria do jogador."""
+    if not session:
+        return ROLE_WEIGHTS['default']
+
+    role_row = session.query(PlayerRole).filter_by(
+        player_id=player_id, is_primary=True
+    ).first()
+
+    if not role_row:
+        # Fallback: pega qualquer role que nao seja IGL
+        role_row = session.query(PlayerRole).filter(
+            PlayerRole.player_id == player_id,
+            PlayerRole.role != 'igl',
+        ).first()
+
+    if not role_row:
+        return ROLE_WEIGHTS['default']
+
+    role_key = role_row.role.lower()
+    return ROLE_WEIGHTS.get(role_key, ROLE_WEIGHTS['default'])
+
+
+def _individual_score_fallback(player):
+    """Fallback: normalizacao antiga pra quando nao tem dados suficientes."""
     rating = player.rating_2_0 or 1.0
     impact = player.impact or 1.0
-    kast = (player.kast or 70.0) / 70.0       # normaliza: 70% KAST = 1.0
-    adr = (player.adr or 75.0) / 75.0         # normaliza: 75 ADR = 1.0
+    kast = (player.kast or 70.0) / 70.0
+    adr = (player.adr or 75.0) / 75.0
     kd = player.kd_ratio or 1.0
 
     return (
-        0.40 * rating
+        0.35 * rating
         + 0.20 * impact
         + 0.15 * kast
         + 0.15 * adr
-        + 0.10 * kd
+        + 0.15 * kd
     )
+
+
+def _individual_score(player, session=None):
+    """Score individual baseado em z-score normalization com role-aware weights.
+    Calcula z-score de cada stat usando distribuicao de todos os jogadores no banco.
+    Resultado ~1.0 pra jogador mediano, ~1.3 pra elite (2 sigma), ~0.7 pra ruim."""
+    if not session:
+        return _individual_score_fallback(player)
+
+    dist = _get_stats_distribution(session)
+
+    # Checa se tem dados suficientes pra z-score
+    has_enough = all(
+        dist[s]['count'] >= MIN_PLAYERS_FOR_ZSCORE and dist[s]['stdev'] > 0
+        for s in dist
+    )
+    if not has_enough:
+        return _individual_score_fallback(player)
+
+    # Calcula z-scores
+    raw = {
+        'rating': player.rating_2_0 or 1.0,
+        'impact': player.impact or 1.0,
+        'kast': player.kast or 70.0,
+        'adr': player.adr or 75.0,
+        'kd': player.kd_ratio or 1.0,
+    }
+    stat_map = {
+        'rating': 'rating_2_0',
+        'impact': 'impact',
+        'kast': 'kast',
+        'adr': 'adr',
+        'kd': 'kd_ratio',
+    }
+
+    zscores = {}
+    for key, db_col in stat_map.items():
+        d = dist[db_col]
+        zscores[key] = (raw[key] - d['mean']) / d['stdev']
+
+    # Role-aware weights
+    weights = _get_player_role_weights(player.id, session)
+
+    weighted_zscore = sum(weights[key] * zscores[key] for key in weights)
+
+    # Final score: ~1.0 average, ~1.3 elite (2 sigma), ~0.7 bad (-2 sigma)
+    return 1.0 + 0.15 * weighted_zscore
 
 
 def _get_igl_bonus(player_id, team, session):
@@ -214,7 +335,7 @@ def _get_igl_bonus(player_id, team, session):
 def calculate_initial_price(player, team=None, session=None):
     """Preco = individual_score^1.5 * (1 + igl_bonus) * team_factor * base.
     IGLs recebem bonus baseado em performance do time (win rates, placements)."""
-    ind = _individual_score(player)
+    ind = _individual_score(player, session=session)
     rank = team.world_rank if team else None
     team_factor = _get_team_factor(rank)
 

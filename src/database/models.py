@@ -37,6 +37,7 @@ class Event(Base):
     location = Column(String(255))
     event_type = Column(String(50))
     prize_pool = Column(String(100))
+    is_lan = Column(Boolean, default=None)
 
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())

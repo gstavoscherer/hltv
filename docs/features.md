@@ -7,8 +7,15 @@
 - Veto sequence (pick/ban revela preferencias)
 - Scores por lado (CT/T) por mapa
 - Rosters com datas de entrada/saida
-- World rank atual
+- World rank atual (HLTV ranking, scraper dedicado)
 - Matches com scores, best_of, datas
+- **Z-score normalization** — stats individuais normalizadas por distribuicao real dos jogadores
+- **Role-aware scoring** — pesos diferentes por role (AWP, entry, support, lurker, rifler)
+- **IGL bonus** — bonus de 8-20% baseado em round win rate, match win rate, event placements
+- **H2H aggregado** — `GET /api/cartola/h2h/{t1}/{t2}` (matches, maps, rounds)
+- **Roster stability** — `GET /api/cartola/team/{id}/stability` (tenure, changes)
+- **is_lan flag** — campo no Event model
+- **Backtesting** — `python3 cartola/backtest.py` simula precos em matches historicos
 
 ## Falta implementar
 
@@ -32,43 +39,36 @@
 
 ### 4. Historical rankings (prioridade 2)
 - Evolucao semanal do ranking mostra tendencia (subindo vs caindo)
-- Fonte: `/ranking/teams/{date}` no HLTV
+- Fonte: `/ranking/teams/{date}` no HLTV (ja temos scraper)
 - Impacto: alto — tendencia importa mais que rank absoluto
-- Esforco: baixo (1 pagina por semana)
+- Esforco: baixo (salvar historico no sync semanal, tabela nova team_ranking_history)
 
-### 5. LAN vs Online flag (prioridade 3)
-- Times performam diferente em LAN vs online
-- Fonte: campo `is_lan` no event (HLTV mostra tipo do evento)
-- Impacto: medio
-- Esforco: baixo (campo simples no model)
-
-### 6. Pistol round win rate (prioridade 3)
+### 5. Pistol round win rate (prioridade 3)
 - Ganha pistol round, ganha o half na maioria dos casos
 - Fonte: pagina de stats do time no HLTV
 - Impacto: medio
 - Esforco: medio (scraper novo)
 
-### 7. H2H aggregado (prioridade 3)
-- Win rate time A vs time B, maps jogados entre eles
-- Fonte: query nos dados existentes (matches + match_maps)
-- Impacto: medio
-- Esforco: zero (so SQL/API endpoint)
-
-### 8. Roster stability (prioridade 3)
-- Tempo junto como squad — time estavel vs recem-formado
-- Fonte: query nos dados existentes (team_players.joined_date)
-- Impacto: medio
-- Esforco: zero (so SQL/API endpoint)
+### 6. Scraper automatico de roles (prioridade 2)
+- Player roles (IGL, AWP, entry, etc) populados automaticamente
+- Fonte: pagina do jogador no HLTV ou roster page do time
+- Impacto: alto — sem roles, z-score e IGL bonus dependem de dados manuais
+- Esforco: medio (adicionar no scraper existente de players)
 
 ## Resumo de esforco
 
-| Dado | Scraping novo? | Tabela nova? |
-|---|---|---|
-| Map pool stats | Sim | Sim (team_map_stats) |
-| Odds | Sim (pagina do match) | Sim (match_odds) |
-| Recent form | Sim (stats filtrado) | Sim (player_form_snapshots) |
-| Historical rankings | Sim (ranking page) | Sim (team_ranking_history) |
-| LAN vs Online | Nao (ja tem event_type) | Nao (campo no event) |
-| Pistol rounds | Sim | Sim (team_stats ou campo extra) |
-| H2H aggregado | Nao | Nao (query) |
-| Roster stability | Nao | Nao (query) |
+| Dado | Status | Scraping novo? | Tabela nova? |
+|---|---|---|---|
+| Z-score normalization | **FEITO** | Nao | Nao |
+| Role-aware scoring | **FEITO** | Nao | Nao (usa player_roles) |
+| IGL bonus | **FEITO** | Nao | Nao (usa player_roles) |
+| H2H aggregado | **FEITO** | Nao | Nao (query + API) |
+| Roster stability | **FEITO** | Nao | Nao (query + API) |
+| LAN vs Online | **FEITO** | Nao | Nao (campo is_lan) |
+| Backtesting | **FEITO** | Nao | Nao (simulacao in-memory) |
+| Map pool stats | Pendente | Sim | Sim (team_map_stats) |
+| Odds | Pendente | Sim (pagina do match) | Sim (match_odds) |
+| Recent form | Pendente | Sim (stats filtrado) | Sim (player_form_snapshots) |
+| Historical rankings | Pendente | Sim (ranking page) | Sim (team_ranking_history) |
+| Pistol rounds | Pendente | Sim | Sim |
+| Role scraper | Pendente | Sim (pagina do player) | Nao (popula player_roles) |
