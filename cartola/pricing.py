@@ -30,14 +30,7 @@ LONG_TERM_WEIGHT = 0.20
 MID_TERM_MATCH_COUNT = 10
 MID_TERM_WEIGHTS = [1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
 
-TEAM_RANK_FACTORS = [
-    (5, 5.0), (10, 4.0), (20, 3.0), (30, 2.0), (50, 1.5),
-]
 DEFAULT_TEAM_FACTOR = 1.0
-
-OPPONENT_MULT = [
-    (5, 1.3), (10, 1.2), (20, 1.1), (30, 1.0), (50, 0.9),
-]
 DEFAULT_OPPONENT_MULT = 0.8
 
 EVENT_WEIGHTS = {'major': 1.5, 'big': 1.2}
@@ -55,21 +48,29 @@ DEMAND_MAX = 0.03
 # ============================================================================
 
 def _get_team_factor(world_rank):
+    """Formula continua: rank 1 = 6.0, rank 50 = 1.5, rank 100+ = 1.0.
+    f(rank) = 6.0 * (1/rank)^0.35 — curva suave que diferencia cada posicao."""
     if world_rank is None:
         return DEFAULT_TEAM_FACTOR
-    for threshold, factor in TEAM_RANK_FACTORS:
-        if world_rank <= threshold:
-            return factor
-    return DEFAULT_TEAM_FACTOR
+    if world_rank < 1:
+        world_rank = 1
+    factor = 6.0 * (1 / world_rank) ** 0.35
+    return max(factor, DEFAULT_TEAM_FACTOR)
 
 
 def _get_opponent_mult(world_rank):
+    """Formula continua: rank 1 = 1.4x, rank 30 = 1.0x, rank 100 = 0.75x.
+    Baseado em interpolacao linear por faixas."""
     if world_rank is None:
         return DEFAULT_OPPONENT_MULT
-    for threshold, mult in OPPONENT_MULT:
-        if world_rank <= threshold:
-            return mult
-    return DEFAULT_OPPONENT_MULT
+    if world_rank <= 30:
+        # rank 1 -> 1.4, rank 30 -> 1.0
+        return 1.4 - (world_rank - 1) * (0.4 / 29)
+    elif world_rank <= 100:
+        # rank 30 -> 1.0, rank 100 -> 0.75
+        return 1.0 - (world_rank - 30) * (0.25 / 70)
+    else:
+        return 0.75
 
 
 def _get_event_weight(event):

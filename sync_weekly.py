@@ -14,6 +14,7 @@ from src.scrapers.teams import scrape_team
 from src.scrapers.selenium_helpers import DriverPool
 from cartola.pricing import initialize_market
 from cartola.tasks import weekly_maintenance
+from sync_rankings import update_rankings, recalculate_all_prices
 
 logger = logging.getLogger(__name__)
 
@@ -91,20 +92,28 @@ def main():
 
     print("=== SYNC SEMANAL ===\n")
 
-    # 1. Atualizar times (rankings + rosters)
-    print("1. Atualizando times e rankings...")
+    # 1. Atualizar rankings HLTV
+    print("1. Atualizando rankings HLTV...")
+    update_rankings(headless=True)
+
+    # 2. Atualizar times (rosters)
+    print("\n2. Atualizando times e rosters...")
     update_all_teams(headless=True)
 
-    # 2. Atualizar stats de jogadores
-    print("\n2. Atualizando stats de jogadores...")
+    # 3. Atualizar stats de jogadores
+    print("\n3. Atualizando stats de jogadores...")
     update_all_player_stats(headless=True)
 
-    # 3. Inicializar mercado pra jogadores novos
-    print("\n3. Inicializando mercado pra jogadores novos...")
+    # 4. Inicializar mercado pra jogadores novos
+    print("\n4. Inicializando mercado pra jogadores novos...")
     initialize_market()
 
-    # 4. Recalcular fair prices
-    print("\n4. Manutencao semanal CartolaCS...")
+    # 5. Recalcular precos com novos rankings
+    print("\n5. Recalculando precos com novos rankings...")
+    recalculate_all_prices()
+
+    # 6. Manutencao semanal CartolaCS
+    print("\n6. Manutencao semanal CartolaCS...")
     weekly_maintenance()
 
     print("\n=== SYNC SEMANAL CONCLUIDO ===")
