@@ -21,3 +21,4 @@ chromedriver.log
 
 # Worktrees
 .worktrees/
+frontend/node_modules/
