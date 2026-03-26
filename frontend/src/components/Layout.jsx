@@ -6,6 +6,7 @@ const navItems = [
   { path: '/teams', label: 'Teams', icon: '\u2691' },
   { path: '/players', label: 'Players', icon: '\u263A' },
   { path: '/matches', label: 'Matches', icon: '\u2694' },
+  { path: '/cartola', label: 'CartolaCS', icon: '\u26BD' },
 ]
 
 function getPageTitle(pathname) {

@@ -17,8 +17,8 @@ export default function Matches() {
 
   useEffect(() => {
     setLoading(true)
-    const query = selectedEvent ? `?event_id=${selectedEvent}` : ''
-    fetchApi(`/matches${query}&limit=200`)
+    const params = selectedEvent ? `?event_id=${selectedEvent}&limit=200` : '?limit=200'
+    fetchApi(`/matches${params}`)
       .then(data => setMatches(data.matches || (Array.isArray(data) ? data : [])))
       .catch(err => setError(err.message))
       .finally(() => setLoading(false))
