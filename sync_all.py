@@ -66,6 +66,8 @@ def sync_full_event(event_id, headless=True, team_workers=3, player_workers=3, f
     with session_scope() as session:
         event = session.query(Event).filter_by(id=event_id).first()
         if event and event_details:
+            if 'name' in event_details:
+                event.name = event_details['name']
             if 'location' in event_details:
                 event.location = event_details['location']
             if 'prize_pool' in event_details:
@@ -74,6 +76,10 @@ def sync_full_event(event_id, headless=True, team_workers=3, player_workers=3, f
                 event.start_date = event_details['start_date']
             if 'end_date' in event_details:
                 event.end_date = event_details['end_date']
+            if 'event_type' in event_details:
+                event.event_type = event_details['event_type']
+            if 'is_lan' in event_details:
+                event.is_lan = event_details['is_lan']
     print("  Evento atualizado com detalhes\n")
 
     if not team_ids:

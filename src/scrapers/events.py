@@ -151,6 +151,55 @@ def _get_event_details_selenium(event_id, headless=True, driver=None):
         wait = WebDriverWait(driver, 20)
         wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
 
+        # Extract event name
+        try:
+            name_elem = driver.find_element(By.CSS_SELECTOR, ".event-hub-title, .eventname, h1.event-hub-title")
+            name = name_elem.text.strip()
+            if name:
+                details['name'] = name
+        except Exception:
+            try:
+                title = driver.title or ""
+                if " | " in title:
+                    details['name'] = title.split(" | ")[0].strip()
+            except Exception:
+                pass
+
+        # Extract event type (Major, Big Event, etc)
+        try:
+            for selector in [".event-hub-subtitle", ".event-type", ".eventMeta"]:
+                try:
+                    elem = driver.find_element(By.CSS_SELECTOR, selector)
+                    text = elem.text.strip().lower()
+                    if 'major' in text:
+                        details['event_type'] = 'Major'
+                    elif 'big event' in text or 'big' in text:
+                        details['event_type'] = 'Big Event'
+                    elif 'lan' in text or 'international' in text:
+                        details['event_type'] = 'International LAN'
+                        details['is_lan'] = True
+                    elif 'online' in text:
+                        details['event_type'] = 'Online'
+                        details['is_lan'] = False
+                    if 'event_type' in details:
+                        break
+                except Exception:
+                    continue
+
+            # Fallback: check page source for event type hints
+            if 'event_type' not in details:
+                source = driver.page_source.lower()
+                if 'major' in source and 'valve' in source:
+                    details['event_type'] = 'Major'
+                elif '"big event"' in source:
+                    details['event_type'] = 'Big Event'
+        except Exception:
+            pass
+
+        # Detect LAN from location if not set
+        if 'is_lan' not in details and 'location' not in details:
+            details['is_lan'] = None
+
         # Extract location
         try:
             location_elems = driver.find_elements(By.CSS_SELECTOR, "span.text-ellipsis")

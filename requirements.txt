@@ -7,6 +7,7 @@ sqlalchemy>=2.0.0
 
 # Utilities
 setuptools
+python-dotenv
 
 # Testing
 pytest
