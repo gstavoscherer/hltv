@@ -268,6 +268,26 @@ class TestExtractTeamId:
         assert _extract_team_id_from_href("https://www.hltv.org/team/abc/name") is None
 
 
+class TestParseDateRange:
+    def test_standard_range(self):
+        from src.scrapers.events import _parse_date_range
+        start, end = _parse_date_range(1709251200000, 1709683200000)
+        assert start.year == 2024
+        assert end > start
+
+    def test_single_date(self):
+        from src.scrapers.events import _parse_date_range
+        start, end = _parse_date_range(1709251200000, None)
+        assert start is not None
+        assert end is None
+
+    def test_both_none(self):
+        from src.scrapers.events import _parse_date_range
+        start, end = _parse_date_range(None, None)
+        assert start is None
+        assert end is None
+
+
 class TestSyncFullEventDriverReuse:
     """sync_full_event should create one driver for all 3 event calls."""
 

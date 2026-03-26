@@ -16,6 +16,13 @@ from .selenium_helpers import create_driver, wait_for_cloudflare, random_delay
 logger = logging.getLogger(__name__)
 
 
+def _parse_date_range(start_unix_ms, end_unix_ms):
+    """Convert unix timestamps (ms) to date objects."""
+    start = datetime.fromtimestamp(start_unix_ms / 1000).date() if start_unix_ms else None
+    end = datetime.fromtimestamp(end_unix_ms / 1000).date() if end_unix_ms else None
+    return start, end
+
+
 def _scrape_events_selenium(limit=None, headless=True):
     driver = create_driver(headless=headless)
     events = []
@@ -49,13 +56,16 @@ def _scrape_events_selenium(limit=None, headless=True):
                 except NoSuchElementException:
                     name = event_elem.text.split('\n')[0].strip()
 
-                date_elem = event_elem.find_element(By.CSS_SELECTOR, "span[data-unix]")
-                start_unix = int(date_elem.get_attribute("data-unix"))
-                start_date = datetime.fromtimestamp(start_unix / 1000).date()
-
+                start_date = None
                 end_date = None
                 try:
-                    event_elem.find_element(By.CLASS_NAME, "eventdate")
+                    date_elems = event_elem.find_elements(By.CSS_SELECTOR, "span[data-unix]")
+                    if len(date_elems) >= 1:
+                        start_unix = int(date_elems[0].get_attribute("data-unix"))
+                        start_date = datetime.fromtimestamp(start_unix / 1000).date()
+                    if len(date_elems) >= 2:
+                        end_unix = int(date_elems[1].get_attribute("data-unix"))
+                        end_date = datetime.fromtimestamp(end_unix / 1000).date()
                 except Exception:
                     pass
 
@@ -145,6 +155,17 @@ def _get_event_details_selenium(event_id, headless=True, driver=None):
                     pass
         except Exception as e:
             logger.warning("Nao foi possivel extrair location: %s", e)
+
+        # Extract dates
+        try:
+            date_elems = driver.find_elements(By.CSS_SELECTOR, ".eventdate span[data-unix]")
+            if len(date_elems) >= 2:
+                start_unix = int(date_elems[0].get_attribute("data-unix"))
+                end_unix = int(date_elems[1].get_attribute("data-unix"))
+                details['start_date'] = datetime.fromtimestamp(start_unix / 1000).date()
+                details['end_date'] = datetime.fromtimestamp(end_unix / 1000).date()
+        except Exception:
+            pass
 
         # Extract prize pool
         try:
