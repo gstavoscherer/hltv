@@ -12,6 +12,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from .selenium_helpers import create_driver, wait_for_cloudflare, random_delay
 from .events import _extract_team_id_from_href
+from ..database.models import MatchOdds
 
 logger = logging.getLogger(__name__)
 
@@ -310,7 +311,12 @@ def scrape_match_detail(match_id, headless=True, driver=None):
             except Exception as e:
                 logger.warning("Erro ao processar mapa %d: %s", idx, e)
 
-        print(f"  Match {match_id}: {len(result['maps'])} mapas, {len(result['vetos'])} vetos")
+        # Parse betting odds (best-effort, never breaks main flow)
+        result['odds'] = _scrape_odds_from_page(driver)
+
+        print(f"  Match {match_id}: {len(result['maps'])} mapas, {len(result['vetos'])} vetos"
+              + (f", odds: {result['odds']['team1_odds']} vs {result['odds']['team2_odds']}"
+                 if result.get('odds') else ""))
         return result
 
     except Exception as e:
@@ -443,3 +449,105 @@ def scrape_map_stats(mapstats_id, headless=True, driver=None):
     finally:
         if owns_driver:
             driver.quit()
+
+
+def _scrape_odds_from_page(driver):
+    """Extract betting odds from the current match page. Returns dict or None.
+
+    Tries multiple CSS selector strategies since HLTV's odds layout can vary.
+    Wrapped defensively so failures never propagate to the caller.
+    """
+    try:
+        team1_odds = None
+        team2_odds = None
+        source = None
+
+        # Strategy 1: odds cells in the standard odds section
+        odds_cells = driver.find_elements(By.CSS_SELECTOR, ".odds .odds-cell .odds-val, .odds-cell .odds-val")
+        if len(odds_cells) >= 2:
+            try:
+                team1_odds = float(odds_cells[0].text.strip())
+                team2_odds = float(odds_cells[1].text.strip())
+                source = "hltv_odds_cell"
+            except (ValueError, IndexError):
+                pass
+
+        # Strategy 2: provider-specific odds (e.g. bet365)
+        if team1_odds is None:
+            provider_elems = driver.find_elements(By.CSS_SELECTOR, ".odds-provider .odds-left, .odds-provider .odds-right")
+            if len(provider_elems) >= 2:
+                try:
+                    team1_odds = float(provider_elems[0].text.strip())
+                    team2_odds = float(provider_elems[1].text.strip())
+                except (ValueError, IndexError):
+                    pass
+                # Try to get provider name
+                try:
+                    prov = driver.find_element(By.CSS_SELECTOR, ".odds-provider img")
+                    source = prov.get_attribute("title") or prov.get_attribute("alt") or "hltv_provider"
+                except Exception:
+                    source = "hltv_provider"
+
+        # Strategy 3: broader search for any element containing decimal odds pattern
+        if team1_odds is None:
+            odds_containers = driver.find_elements(By.CSS_SELECTOR, "[class*='odds'] td, [class*='odds'] span, [class*='Odds'] span")
+            odds_values = []
+            for el in odds_containers:
+                txt = el.text.strip()
+                if re.match(r'^\d+\.\d{1,2}$', txt):
+                    try:
+                        odds_values.append(float(txt))
+                    except ValueError:
+                        pass
+                if len(odds_values) >= 2:
+                    break
+            if len(odds_values) >= 2:
+                team1_odds = odds_values[0]
+                team2_odds = odds_values[1]
+                source = "hltv_generic"
+
+        if team1_odds is not None and team2_odds is not None:
+            return {
+                'team1_odds': team1_odds,
+                'team2_odds': team2_odds,
+                'source': source or 'hltv',
+            }
+
+        return None
+
+    except Exception as e:
+        logger.debug("Odds not found on match page: %s", e)
+        return None
+
+
+def save_match_odds(match_id, odds_data, session):
+    """Save or update match odds in the MatchOdds table.
+
+    Args:
+        match_id: HLTV match ID
+        odds_data: dict with team1_odds, team2_odds, source (from _scrape_odds_from_page)
+        session: SQLAlchemy session
+    """
+    if not odds_data:
+        return None
+
+    existing = session.query(MatchOdds).filter_by(match_id=match_id).first()
+    if existing:
+        existing.team1_odds = odds_data['team1_odds']
+        existing.team2_odds = odds_data['team2_odds']
+        existing.source = odds_data.get('source', 'hltv')
+        existing.scraped_at = datetime.utcnow()
+        logger.info("Updated odds for match %d: %.2f vs %.2f",
+                     match_id, odds_data['team1_odds'], odds_data['team2_odds'])
+        return existing
+    else:
+        odds = MatchOdds(
+            match_id=match_id,
+            team1_odds=odds_data['team1_odds'],
+            team2_odds=odds_data['team2_odds'],
+            source=odds_data.get('source', 'hltv'),
+        )
+        session.add(odds)
+        logger.info("Saved odds for match %d: %.2f vs %.2f",
+                     match_id, odds_data['team1_odds'], odds_data['team2_odds'])
+        return odds

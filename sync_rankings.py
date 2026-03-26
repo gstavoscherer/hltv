@@ -4,8 +4,10 @@ Atualiza rankings HLTV de todos os times e recalcula precos do CartolaCS.
 """
 
 import logging
+from datetime import date
+
 from src.database import init_db, session_scope
-from src.database.models import Team, Player, PlayerMarket, PlayerPriceHistory
+from src.database.models import Team, Player, PlayerMarket, PlayerPriceHistory, TeamRankingHistory
 from src.scrapers.rankings import scrape_rankings
 from cartola.pricing import calculate_initial_price, _clamp, MIN_PRICE, MAX_PRICE
 
@@ -40,6 +42,23 @@ def update_rankings(date_str=None, headless=True):
                 team.world_rank = r['rank']
                 if old_rank != r['rank']:
                     updated += 1
+
+                # Save ranking history (upsert to avoid duplicates on team_id + date)
+                existing_hist = (
+                    s.query(TeamRankingHistory)
+                    .filter_by(team_id=team.id, date=date.today())
+                    .first()
+                )
+                if existing_hist:
+                    existing_hist.rank = r['rank']
+                    existing_hist.points = r.get('points')
+                else:
+                    s.add(TeamRankingHistory(
+                        team_id=team.id,
+                        rank=r['rank'],
+                        points=r.get('points'),
+                        date=date.today(),
+                    ))
             else:
                 not_found.append(f"#{r['rank']} {r['team_name']} (ID: {r['team_id']})")
 

@@ -66,6 +66,22 @@ def _extract_player_data(driver, player_id):
     except Exception:
         pass
 
+    # Detect player role from page content
+    try:
+        page_text = driver.page_source.lower()
+        role = None
+        if 'in-game leader' in page_text:
+            role = 'igl'
+        elif 'awper' in page_text:
+            role = 'awp'
+        elif 'entry fragger' in page_text:
+            role = 'entry'
+        elif 'rifler' in page_text:
+            role = 'rifler'
+        player_data['role'] = role
+    except Exception:
+        player_data['role'] = None
+
     # Extract career stats from stats-row elements
     stats_rows = driver.find_elements(By.CLASS_NAME, "stats-row")
 

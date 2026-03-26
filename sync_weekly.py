@@ -8,13 +8,15 @@ import time
 import traceback
 
 from src.database import init_db, session_scope
-from src.database.models import Player, Team, TeamPlayer
+from src.database.models import Player, Team, TeamPlayer, PlayerRole
 from src.scrapers.players import scrape_player
 from src.scrapers.teams import scrape_team
 from src.scrapers.selenium_helpers import DriverPool
 from cartola.pricing import initialize_market
 from cartola.tasks import weekly_maintenance
 from sync_rankings import update_rankings, recalculate_all_prices
+from src.scrapers.team_maps import update_all_team_map_stats
+from src.scrapers.player_form import update_all_player_forms
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +42,13 @@ def update_all_player_stats(headless=True):
                     with session_scope() as s:
                         player = s.query(Player).filter_by(id=pid).first()
                         if player:
+                            # Save detected role
+                            role = stats.pop('role', None)
+                            if role:
+                                existing = s.query(PlayerRole).filter_by(player_id=pid, role=role).first()
+                                if not existing:
+                                    s.add(PlayerRole(player_id=pid, role=role, is_primary=(role == 'igl')))
+
                             for key, value in stats.items():
                                 if hasattr(player, key):
                                     setattr(player, key, value)
@@ -112,8 +121,16 @@ def main():
     print("\n5. Recalculando precos com novos rankings...")
     recalculate_all_prices()
 
-    # 6. Manutencao semanal CartolaCS
-    print("\n6. Manutencao semanal CartolaCS...")
+    # 6. Atualizar map pool stats
+    print("\n6. Atualizando map pool stats...")
+    update_all_team_map_stats()
+
+    # 7. Atualizar form snapshots (ultimos 3 meses)
+    print("\n7. Atualizando player form snapshots...")
+    update_all_player_forms(months=3)
+
+    # 8. Manutencao semanal CartolaCS
+    print("\n8. Manutencao semanal CartolaCS...")
     weekly_maintenance()
 
     print("\n=== SYNC SEMANAL CONCLUIDO ===")

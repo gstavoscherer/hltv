@@ -401,3 +401,94 @@ class Transaction(Base):
 
     def __repr__(self):
         return f"<Transaction(user_id={self.user_id}, {self.type} player_id={self.player_id})>"
+
+
+# ============================================================================
+# DATA FEATURES — tabelas pra predicao e analytics
+# ============================================================================
+
+class TeamMapStats(Base):
+    __tablename__ = 'team_map_stats'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    team_id = Column(Integer, ForeignKey('teams.id'), nullable=False)
+    map_name = Column(String(30), nullable=False)
+    times_played = Column(Integer, default=0)
+    wins = Column(Integer, default=0)
+    ct_wins = Column(Integer, default=0)
+    ct_rounds_won = Column(Integer, default=0)
+    ct_rounds_played = Column(Integer, default=0)
+    t_wins = Column(Integer, default=0)
+    t_rounds_won = Column(Integer, default=0)
+    t_rounds_played = Column(Integer, default=0)
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    team = relationship("Team")
+
+    __table_args__ = (
+        UniqueConstraint('team_id', 'map_name', name='uq_team_map'),
+    )
+
+    def __repr__(self):
+        return f"<TeamMapStats(team={self.team_id}, map={self.map_name}, wr={self.wins}/{self.times_played})>"
+
+
+class MatchOdds(Base):
+    __tablename__ = 'match_odds'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    match_id = Column(Integer, ForeignKey('matches.id'), nullable=False, unique=True)
+    team1_odds = Column(Float)
+    team2_odds = Column(Float)
+    source = Column(String(50))
+    scraped_at = Column(DateTime, server_default=func.now())
+
+    match = relationship("Match")
+
+    def __repr__(self):
+        return f"<MatchOdds(match={self.match_id}, {self.team1_odds} vs {self.team2_odds})>"
+
+
+class PlayerFormSnapshot(Base):
+    __tablename__ = 'player_form_snapshots'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    player_id = Column(Integer, ForeignKey('players.id'), nullable=False)
+    period_start = Column(Date, nullable=False)
+    period_end = Column(Date, nullable=False)
+    rating = Column(Float)
+    impact = Column(Float)
+    kast = Column(Float)
+    adr = Column(Float)
+    kd_ratio = Column(Float)
+    maps_played = Column(Integer)
+    created_at = Column(DateTime, server_default=func.now())
+
+    player = relationship("Player")
+
+    __table_args__ = (
+        UniqueConstraint('player_id', 'period_start', 'period_end', name='uq_player_form_period'),
+    )
+
+    def __repr__(self):
+        return f"<PlayerFormSnapshot(player={self.player_id}, {self.period_start} to {self.period_end})>"
+
+
+class TeamRankingHistory(Base):
+    __tablename__ = 'team_ranking_history'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    team_id = Column(Integer, ForeignKey('teams.id'), nullable=False)
+    rank = Column(Integer, nullable=False)
+    points = Column(Integer)
+    date = Column(Date, nullable=False)
+    created_at = Column(DateTime, server_default=func.now())
+
+    team = relationship("Team")
+
+    __table_args__ = (
+        UniqueConstraint('team_id', 'date', name='uq_team_ranking_date'),
+    )
+
+    def __repr__(self):
+        return f"<TeamRankingHistory(team={self.team_id}, #{self.rank}, {self.date})>"

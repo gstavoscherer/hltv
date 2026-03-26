@@ -7,7 +7,7 @@ from datetime import date, timedelta
 
 from sqlalchemy import or_, and_
 
-from src.database.models import Match, MatchMap, TeamPlayer
+from src.database.models import Match, MatchMap, TeamPlayer, TeamRankingHistory
 
 
 def get_h2h(team1_id, team2_id, session):
@@ -151,4 +151,52 @@ def get_roster_stability(team_id, session):
         "oldest_member_days": oldest_member_days,
         "newest_member_days": newest_member_days,
         "changes_last_6_months": changes_last_6_months,
+    }
+
+
+def get_ranking_trend(team_id, session, weeks=8):
+    """Returns ranking history for a team over last N weeks.
+
+    Returns list of {'date': date, 'rank': int, 'points': int}
+    ordered by date ascending.
+    Also returns trend: 'rising', 'falling', or 'stable'
+    based on comparing first half avg vs second half avg rank.
+    """
+    cutoff = date.today() - timedelta(weeks=weeks)
+
+    history = (
+        session.query(TeamRankingHistory)
+        .filter(
+            TeamRankingHistory.team_id == team_id,
+            TeamRankingHistory.date >= cutoff,
+        )
+        .order_by(TeamRankingHistory.date.asc())
+        .all()
+    )
+
+    entries = [
+        {
+            "date": h.date.isoformat(),
+            "rank": h.rank,
+            "points": h.points,
+        }
+        for h in history
+    ]
+
+    # Determine trend by comparing first half avg rank vs second half avg rank
+    trend = "stable"
+    if len(entries) >= 2:
+        mid = len(entries) // 2
+        first_half_avg = sum(e["rank"] for e in entries[:mid]) / mid
+        second_half_avg = sum(e["rank"] for e in entries[mid:]) / (len(entries) - mid)
+        # Lower rank number = better position, so if second half avg is lower, team is rising
+        diff = first_half_avg - second_half_avg
+        if diff >= 1:
+            trend = "rising"
+        elif diff <= -1:
+            trend = "falling"
+
+    return {
+        "history": entries,
+        "trend": trend,
     }

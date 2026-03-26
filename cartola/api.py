@@ -16,7 +16,7 @@ from src.database.models import (
 from cartola.auth import (
     hash_password, verify_password, create_token, get_current_user,
 )
-from cartola.analytics import get_h2h, get_roster_stability
+from cartola.analytics import get_h2h, get_roster_stability, get_ranking_trend
 
 router = APIRouter(prefix="/api/cartola", tags=["cartola"])
 
@@ -409,3 +409,15 @@ def roster_stability(team_id: int):
         stats = get_roster_stability(team_id, s)
         stats["team"] = {"id": team.id, "name": team.name}
         return stats
+
+
+@router.get("/team/{team_id}/ranking-history")
+def ranking_history(team_id: int, weeks: int = Query(8, ge=1, le=52)):
+    with session_scope() as s:
+        team = s.query(Team).get(team_id)
+        if not team:
+            raise HTTPException(404, f"Time {team_id} nao encontrado")
+
+        data = get_ranking_trend(team_id, s, weeks=weeks)
+        data["team"] = {"id": team.id, "name": team.name}
+        return data

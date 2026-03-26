@@ -9,66 +9,46 @@
 - Rosters com datas de entrada/saida
 - World rank atual (HLTV ranking, scraper dedicado)
 - Matches com scores, best_of, datas
-- **Z-score normalization** — stats individuais normalizadas por distribuicao real dos jogadores
-- **Role-aware scoring** — pesos diferentes por role (AWP, entry, support, lurker, rifler)
-- **IGL bonus** — bonus de 8-20% baseado em round win rate, match win rate, event placements
-- **H2H aggregado** — `GET /api/cartola/h2h/{t1}/{t2}` (matches, maps, rounds)
-- **Roster stability** — `GET /api/cartola/team/{id}/stability` (tenure, changes)
-- **is_lan flag** — campo no Event model
-- **Backtesting** — `python3 cartola/backtest.py` simula precos em matches historicos
 
-## Falta implementar
+### Features implementadas
 
-### 1. Map pool stats por time (prioridade 1)
-- Win rate por mapa, vezes jogado, CT/T side win rates
-- Fonte: `/stats/teams/maps/{id}/{name}` no HLTV
-- Impacto: altissimo — saber que time tem 80% win rate em Mirage muda predicao quando aparece no veto
-- Esforco: medio (scraper novo)
-
-### 2. Odds de apostas (prioridade 1)
-- Odds das casas na pagina do match
-- Fonte: pagina do match no HLTV ja mostra odds
-- Impacto: altissimo — captura expectativa do mercado, permite identificar value bets
-- Esforco: baixo (ta na mesma pagina que ja scrapamos)
-
-### 3. Recent form / stats por janela temporal (prioridade 2)
-- Stats dos ultimos 3 meses pesam mais que carreira inteira
-- Fonte: `/stats/players/{id}?startDate=...&endDate=...`
-- Impacto: alto — jogador em boa fase vs ma fase e crucial
-- Esforco: medio (snapshots mensais ou por evento)
-
-### 4. Historical rankings (prioridade 2)
-- Evolucao semanal do ranking mostra tendencia (subindo vs caindo)
-- Fonte: `/ranking/teams/{date}` no HLTV (ja temos scraper)
-- Impacto: alto — tendencia importa mais que rank absoluto
-- Esforco: baixo (salvar historico no sync semanal, tabela nova team_ranking_history)
-
-### 5. Pistol round win rate (prioridade 3)
-- Ganha pistol round, ganha o half na maioria dos casos
-- Fonte: pagina de stats do time no HLTV
-- Impacto: medio
-- Esforco: medio (scraper novo)
-
-### 6. Scraper automatico de roles (prioridade 2)
-- Player roles (IGL, AWP, entry, etc) populados automaticamente
-- Fonte: pagina do jogador no HLTV ou roster page do time
-- Impacto: alto — sem roles, z-score e IGL bonus dependem de dados manuais
-- Esforco: medio (adicionar no scraper existente de players)
-
-## Resumo de esforco
-
-| Dado | Status | Scraping novo? | Tabela nova? |
+| Feature | Descricao | Arquivos | Status |
 |---|---|---|---|
-| Z-score normalization | **FEITO** | Nao | Nao |
-| Role-aware scoring | **FEITO** | Nao | Nao (usa player_roles) |
-| IGL bonus | **FEITO** | Nao | Nao (usa player_roles) |
-| H2H aggregado | **FEITO** | Nao | Nao (query + API) |
-| Roster stability | **FEITO** | Nao | Nao (query + API) |
-| LAN vs Online | **FEITO** | Nao | Nao (campo is_lan) |
-| Backtesting | **FEITO** | Nao | Nao (simulacao in-memory) |
-| Map pool stats | Pendente | Sim | Sim (team_map_stats) |
-| Odds | Pendente | Sim (pagina do match) | Sim (match_odds) |
-| Recent form | Pendente | Sim (stats filtrado) | Sim (player_form_snapshots) |
-| Historical rankings | Pendente | Sim (ranking page) | Sim (team_ranking_history) |
-| Pistol rounds | Pendente | Sim | Sim |
-| Role scraper | Pendente | Sim (pagina do player) | Nao (popula player_roles) |
+| Z-score normalization | Stats normalizadas por distribuicao real | `cartola/pricing.py` | **FEITO** |
+| Role-aware scoring | Pesos por role (AWP, entry, etc) | `cartola/pricing.py` | **FEITO** |
+| IGL bonus | +8-20% baseado em WR, placements | `cartola/pricing.py` | **FEITO** |
+| H2H aggregado | Win rate time A vs B | `cartola/analytics.py`, API `/h2h/{t1}/{t2}` | **FEITO** |
+| Roster stability | Tenure, mudancas recentes | `cartola/analytics.py`, API `/team/{id}/stability` | **FEITO** |
+| is_lan flag | Campo no Event model | `src/database/models.py` | **FEITO** |
+| Backtesting | Simula precos em matches historicos | `cartola/backtest.py` | **FEITO** |
+| Map pool stats | Win rate por mapa por time | `src/scrapers/team_maps.py`, `TeamMapStats` | **FEITO** (308 registros) |
+| Odds de apostas | Odds das casas na pagina do match | `src/scrapers/matches.py`, `MatchOdds` | **FEITO** (scraper pronto, popula nos proximos syncs) |
+| Recent form | Stats ultimos 3 meses | `src/scrapers/player_form.py`, `PlayerFormSnapshot` | **FEITO** (272 snapshots) |
+| Historical rankings | Evolucao semanal do ranking | `sync_rankings.py`, `TeamRankingHistory`, API `/team/{id}/ranking-history` | **FEITO** (popula no proximo sync semanal) |
+| Role scraper | Detecta role na pagina do jogador | `src/scrapers/players.py` | **FEITO** (detecta no proximo sync de players) |
+
+## Como rodar
+
+```bash
+# Map pool stats (calcula dos matches existentes)
+PYTHONPATH=/root/hltv python3 src/scrapers/team_maps.py
+
+# Player form (ultimos 3 meses)
+PYTHONPATH=/root/hltv python3 src/scrapers/player_form.py
+
+# Backtest
+python3 cartola/backtest.py
+
+# Rankings (scrapa HLTV + salva historico)
+python3 sync_rankings.py
+```
+
+## Integracao nos syncs
+
+- **sync_daily.py**: novos eventos + decay + market init
+- **sync_weekly.py**: rankings HLTV + rosters + player stats (detecta roles) + map stats + form snapshots + precos
+- **sync_active_matches.py**: matches ativos + odds (automatico)
+
+## Pistol round win rate
+
+Unico feature nao implementado. Requer scraper dedicado da pagina de stats do time no HLTV (`/stats/teams/pistols/{id}/{name}`). Prioridade baixa — impacto medio e os dados de rounds por mapa ja capturam parte dessa informacao.
