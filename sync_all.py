@@ -16,7 +16,7 @@ from src.database.models import Event, Team, Player, EventTeam, TeamPlayer
 from src.scrapers.events import scrape_events, get_event_teams, get_event_results, get_event_details
 from src.scrapers.teams import scrape_team
 from src.scrapers.players import scrape_player
-from src.scrapers.selenium_helpers import DriverPool
+from src.scrapers.selenium_helpers import DriverPool, create_driver, random_delay
 
 logger = logging.getLogger(__name__)
 
@@ -32,9 +32,24 @@ def sync_full_event(event_id, headless=True, team_workers=3, player_workers=3):
     print(f"SINCRONIZANDO EVENTO {event_id} - MODO COMPLETO")
     print(f"{'='*70}\n")
 
-    # 0. Buscar detalhes do evento (location, prize_pool)
-    print("Etapa 0/4: Buscando detalhes do evento...")
-    event_details = get_event_details(event_id, headless=headless)
+    # Create a shared driver for event-level scraping (details, teams, results)
+    event_driver = create_driver(headless=headless)
+    try:
+        # 0. Buscar detalhes do evento (location, prize_pool)
+        print("Etapa 0/4: Buscando detalhes do evento...")
+        event_details = get_event_details(event_id, headless=headless, driver=event_driver)
+        random_delay(2.0, 4.0)
+
+        # 1. Buscar times do evento
+        print("Etapa 1/4: Buscando times do evento...")
+        team_ids = get_event_teams(event_id, headless=headless, driver=event_driver)
+        random_delay(2.0, 4.0)
+
+        # 2. Buscar placements e prizes
+        print("Etapa 2/4: Buscando placements e prizes...")
+        results = get_event_results(event_id, headless=headless, driver=event_driver)
+    finally:
+        event_driver.quit()
 
     with session_scope() as session:
         event = session.query(Event).filter_by(id=event_id).first()
@@ -45,19 +60,11 @@ def sync_full_event(event_id, headless=True, team_workers=3, player_workers=3):
                 event.prize_pool = event_details['prize_pool']
     print("  Evento atualizado com detalhes\n")
 
-    # 1. Buscar times do evento
-    print("Etapa 1/4: Buscando times do evento...")
-    team_ids = get_event_teams(event_id, headless=headless)
-
     if not team_ids:
         print(f"  Nenhum time encontrado no evento {event_id}")
         return
 
     print(f"  Encontrados {len(team_ids)} times\n")
-
-    # 2. Buscar placements e prizes
-    print("Etapa 2/4: Buscando placements e prizes...")
-    results = get_event_results(event_id, headless=headless)
     results_map = {r['team_id']: r for r in results}
     print(f"  {len(results)} times com placement/prize\n")
 

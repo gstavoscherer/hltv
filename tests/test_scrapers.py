@@ -268,6 +268,45 @@ class TestExtractTeamId:
         assert _extract_team_id_from_href("https://www.hltv.org/team/abc/name") is None
 
 
+class TestSyncFullEventDriverReuse:
+    """sync_full_event should create one driver for all 3 event calls."""
+
+    @patch('sync_all.DriverPool')
+    @patch('sync_all.get_event_results')
+    @patch('sync_all.get_event_teams')
+    @patch('sync_all.get_event_details')
+    @patch('sync_all.create_driver')
+    @patch('sync_all.session_scope')
+    def test_shares_driver_across_event_calls(
+        self, mock_session, mock_create_driver, mock_details, mock_teams,
+        mock_results, mock_pool
+    ):
+        from sync_all import sync_full_event
+
+        mock_driver = MagicMock()
+        mock_create_driver.return_value = mock_driver
+        mock_details.return_value = {'location': 'Test'}
+        mock_teams.return_value = []
+        mock_results.return_value = []
+
+        # Mock session context manager
+        mock_sess = MagicMock()
+        mock_session.return_value.__enter__ = MagicMock(return_value=mock_sess)
+        mock_session.return_value.__exit__ = MagicMock(return_value=False)
+        mock_sess.query.return_value.filter_by.return_value.first.return_value = MagicMock()
+
+        sync_full_event(8504)
+
+        # All 3 calls should receive the shared driver
+        mock_details.assert_called_once()
+        assert mock_details.call_args[1].get('driver') == mock_driver
+        mock_teams.assert_called_once()
+        assert mock_teams.call_args[1].get('driver') == mock_driver
+
+        # Driver should be quit once at the end
+        mock_driver.quit.assert_called_once()
+
+
 class TestEventDriverReuse:
     """Event functions should accept an external driver and not quit it."""
 
