@@ -48,13 +48,13 @@ DEMAND_MAX = 0.03
 # ============================================================================
 
 def _get_team_factor(world_rank):
-    """Formula continua: rank 1 = 6.0, rank 50 = 1.5, rank 100+ = 1.0.
-    f(rank) = 6.0 * (1/rank)^0.35 — curva suave que diferencia cada posicao."""
+    """Formula continua: rank 1 = 1.8, rank 10 = 1.35, rank 30 = 1.1, rank 100+ = 1.0.
+    f(rank) = 1.0 + 0.8 * (1/rank)^0.35 — bonus moderado por time."""
     if world_rank is None:
         return DEFAULT_TEAM_FACTOR
     if world_rank < 1:
         world_rank = 1
-    factor = 6.0 * (1 / world_rank) ** 0.35
+    factor = 1.0 + 0.8 * (1 / world_rank) ** 0.35
     return max(factor, DEFAULT_TEAM_FACTOR)
 
 
@@ -109,11 +109,32 @@ def _get_player_team_in_match(player_id, match, session):
 # PRECO INICIAL
 # ============================================================================
 
-def calculate_initial_price(player, team=None):
+def _individual_score(player):
+    """Score individual baseado em stats de carreira.
+    Combina rating (40%), impact (20%), KAST (15%), ADR (15%), KD (10%).
+    Resultado ~1.0 pra jogador mediano, ~1.5+ pra elite."""
     rating = player.rating_2_0 or 1.0
+    impact = player.impact or 1.0
+    kast = (player.kast or 70.0) / 70.0       # normaliza: 70% KAST = 1.0
+    adr = (player.adr or 75.0) / 75.0         # normaliza: 75 ADR = 1.0
+    kd = player.kd_ratio or 1.0
+
+    return (
+        0.40 * rating
+        + 0.20 * impact
+        + 0.15 * kast
+        + 0.15 * adr
+        + 0.10 * kd
+    )
+
+
+def calculate_initial_price(player, team=None):
+    """Preco = individual_score * team_factor * base.
+    Individual domina (~70% do preco), time da bonus moderado (~30%)."""
+    ind = _individual_score(player)
     rank = team.world_rank if team else None
     team_factor = _get_team_factor(rank)
-    price = team_factor * rating * 10
+    price = ind * team_factor * 30
     return _clamp(round(price, 2), MIN_PRICE, MAX_PRICE)
 
 
