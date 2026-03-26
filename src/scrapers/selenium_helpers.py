@@ -17,7 +17,7 @@ import undetected_chromedriver as uc
 
 logger = logging.getLogger(__name__)
 
-_MAX = int(os.getenv("SELENIUM_MAX_CONCURRENCY", "2"))
+_MAX = int(os.getenv("SELENIUM_MAX_CONCURRENCY", "1"))
 _SEMAPHORE = threading.Semaphore(_MAX)
 
 

@@ -269,7 +269,7 @@ class TestExtractTeamId:
 
 
 class TestWorkerConfig:
-    """Default workers should be 2."""
+    """Default workers should be 1 (safe), overridable via env or --workers."""
 
     def test_default_workers(self):
         import os
@@ -277,7 +277,16 @@ class TestWorkerConfig:
         import importlib
         import sync_all
         importlib.reload(sync_all)
-        assert sync_all._DEFAULT_WORKERS == 2
+        assert sync_all._DEFAULT_WORKERS == 1
+
+    def test_env_override_workers(self):
+        import os
+        os.environ['HLTV_WORKERS'] = '3'
+        import importlib
+        import sync_all
+        importlib.reload(sync_all)
+        assert sync_all._DEFAULT_WORKERS == 3
+        os.environ.pop('HLTV_WORKERS', None)
 
 
 class TestPlayerDelayConfig:
