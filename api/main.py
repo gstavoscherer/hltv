@@ -19,6 +19,10 @@ from src.database.models import (
 )
 from sqlalchemy import func
 
+import asyncio
+from cartola.api import router as cartola_router
+from cartola.bot import start_bot
+
 app = FastAPI(title="HLTV CS2 API", version="1.0.0")
 
 app.add_middleware(
@@ -28,6 +32,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(cartola_router)
+
+
+@app.on_event("startup")
+async def startup_event():
+    asyncio.create_task(start_bot())
 
 
 # ============================================================================

@@ -395,6 +395,15 @@ def sync_full_event(event_id, headless=True, team_workers=3, player_workers=3, f
     finally:
         match_driver.quit()
 
+    # Atualizar precos do CartolaCS
+    try:
+        from cartola.tasks import update_prices_after_sync
+        update_prices_after_sync(event_id)
+    except ImportError:
+        pass
+    except Exception as e:
+        logger.warning("Erro ao atualizar precos CartolaCS: %s", e)
+
     print(f"\n{'='*70}")
     print(f"EVENTO {event_id} SINCRONIZADO COM SUCESSO!")
     print(f"{'='*70}\n")
