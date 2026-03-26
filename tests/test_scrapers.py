@@ -268,6 +268,25 @@ class TestExtractTeamId:
         assert _extract_team_id_from_href("https://www.hltv.org/team/abc/name") is None
 
 
+class TestLocationFilter:
+    def test_is_likely_location(self):
+        from src.scrapers.events import _is_likely_location
+        assert _is_likely_location("Budapest, Hungary") is True
+        assert _is_likely_location("Mayfair, London") is True
+        assert _is_likely_location("Mar 10 - 15") is False
+        assert _is_likely_location("Jan 2026") is False
+        assert _is_likely_location("") is False
+
+    def test_may_location_not_filtered(self):
+        from src.scrapers.events import _is_likely_location
+        # "May" is both a month and part of location names — comma distinguishes
+        assert _is_likely_location("Mayfair, London") is True
+
+    def test_short_text(self):
+        from src.scrapers.events import _is_likely_location
+        assert _is_likely_location("US") is False
+
+
 class TestPrizeParsing:
     def test_parse_prize_value(self):
         from src.scrapers.events import _parse_prize_value

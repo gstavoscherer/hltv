@@ -16,6 +16,21 @@ from .selenium_helpers import create_driver, wait_for_cloudflare, random_delay
 logger = logging.getLogger(__name__)
 
 
+def _is_likely_location(text):
+    """Check if text looks like a location rather than a date string."""
+    if not text or len(text) < 3:
+        return False
+    date_pattern = re.match(
+        r'^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d',
+        text
+    )
+    if date_pattern:
+        return False
+    if ',' in text:
+        return True
+    return False
+
+
 def _parse_prize_value(text):
     """Extract prize value like '$250,000' from text."""
     if not text:
@@ -81,9 +96,7 @@ def _scrape_events_selenium(limit=None, headless=True):
                 try:
                     loc_elem = event_elem.find_element(By.CSS_SELECTOR, "span.text-ellipsis")
                     location_text = loc_elem.text.strip()
-                    months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                              'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-                    if location_text and not any(m in location_text for m in months):
+                    if _is_likely_location(location_text):
                         location = location_text
                 except NoSuchElementException:
                     pass
@@ -141,14 +154,11 @@ def _get_event_details_selenium(event_id, headless=True, driver=None):
         # Extract location
         try:
             location_elems = driver.find_elements(By.CSS_SELECTOR, "span.text-ellipsis")
-            months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
             for elem in location_elems:
                 text = elem.text.strip()
-                if ',' in text and len(text) > 3:
-                    if not any(m in text for m in months):
-                        details['location'] = text
-                        break
+                if _is_likely_location(text):
+                    details['location'] = text
+                    break
 
             if 'location' not in details:
                 try:
