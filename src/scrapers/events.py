@@ -104,8 +104,10 @@ def scrape_events(limit=None, headless=True):
     return _scrape_events_selenium(limit=limit, headless=headless)
 
 
-def _get_event_details_selenium(event_id, headless=True):
-    driver = create_driver(headless=headless)
+def _get_event_details_selenium(event_id, headless=True, driver=None):
+    owns_driver = driver is None
+    if owns_driver:
+        driver = create_driver(headless=headless)
     details = {}
 
     try:
@@ -177,12 +179,13 @@ def _get_event_details_selenium(event_id, headless=True):
         traceback.print_exc()
         return {}
     finally:
-        driver.quit()
+        if owns_driver:
+            driver.quit()
 
 
-def get_event_details(event_id, headless=True):
+def get_event_details(event_id, headless=True, driver=None):
     """Get detailed event information (location, prize pool)."""
-    return _get_event_details_selenium(event_id, headless=headless)
+    return _get_event_details_selenium(event_id, headless=headless, driver=driver)
 
 
 def _extract_team_id_from_href(href):
@@ -199,9 +202,11 @@ def _extract_team_id_from_href(href):
     return None
 
 
-def _get_event_teams_selenium(event_id, headless=True):
+def _get_event_teams_selenium(event_id, headless=True, driver=None):
     """Get participating teams scoped to tournament-specific containers."""
-    driver = create_driver(headless=headless)
+    owns_driver = driver is None
+    if owns_driver:
+        driver = create_driver(headless=headless)
     teams = []
 
     try:
@@ -293,12 +298,13 @@ def _get_event_teams_selenium(event_id, headless=True):
         traceback.print_exc()
         return []
     finally:
-        driver.quit()
+        if owns_driver:
+            driver.quit()
 
 
-def get_event_teams(event_id, headless=True):
+def get_event_teams(event_id, headless=True, driver=None):
     """Get participating teams for a specific event."""
-    return _get_event_teams_selenium(event_id, headless=headless)
+    return _get_event_teams_selenium(event_id, headless=headless, driver=driver)
 
 
 def _parse_placement_number(text):
@@ -326,9 +332,11 @@ def _parse_placement_number(text):
     return None
 
 
-def _get_event_results_selenium(event_id, headless=True):
+def _get_event_results_selenium(event_id, headless=True, driver=None):
     """Get event results from the placements container."""
-    driver = create_driver(headless=headless)
+    owns_driver = driver is None
+    if owns_driver:
+        driver = create_driver(headless=headless)
     results = []
 
     try:
@@ -445,9 +453,10 @@ def _get_event_results_selenium(event_id, headless=True):
         traceback.print_exc()
         return []
     finally:
-        driver.quit()
+        if owns_driver:
+            driver.quit()
 
 
-def get_event_results(event_id, headless=True):
+def get_event_results(event_id, headless=True, driver=None):
     """Get event results with team placements and prizes."""
-    return _get_event_results_selenium(event_id, headless=headless)
+    return _get_event_results_selenium(event_id, headless=headless, driver=driver)

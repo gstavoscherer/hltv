@@ -268,6 +268,49 @@ class TestExtractTeamId:
         assert _extract_team_id_from_href("https://www.hltv.org/team/abc/name") is None
 
 
+class TestEventDriverReuse:
+    """Event functions should accept an external driver and not quit it."""
+
+    @patch('src.scrapers.events.time.sleep')
+    @patch('src.scrapers.events.WebDriverWait')
+    def test_get_event_details_external_driver(self, mock_wait_cls, mock_sleep):
+        from src.scrapers.events import get_event_details
+
+        mock_driver = MagicMock()
+        mock_wait_cls.return_value.until.return_value = True
+        mock_driver.find_elements.return_value = []
+
+        result = get_event_details(8504, driver=mock_driver)
+
+        mock_driver.quit.assert_not_called()
+
+    @patch('src.scrapers.events.time.sleep')
+    @patch('src.scrapers.events.WebDriverWait')
+    def test_get_event_teams_external_driver(self, mock_wait_cls, mock_sleep):
+        from src.scrapers.events import get_event_teams
+
+        mock_driver = MagicMock()
+        mock_wait_cls.return_value.until.return_value = True
+        mock_driver.find_elements.return_value = []
+
+        result = get_event_teams(8504, driver=mock_driver)
+
+        mock_driver.quit.assert_not_called()
+
+    @patch('src.scrapers.events.time.sleep')
+    @patch('src.scrapers.events.WebDriverWait')
+    def test_get_event_results_external_driver(self, mock_wait_cls, mock_sleep):
+        from src.scrapers.events import get_event_results
+
+        mock_driver = MagicMock()
+        mock_wait_cls.return_value.until.return_value = True
+        mock_driver.find_elements.return_value = []
+
+        result = get_event_results(8504, driver=mock_driver)
+
+        mock_driver.quit.assert_not_called()
+
+
 class TestScrapePlayerRetry:
     @patch('src.scrapers.players.time.sleep')
     @patch('src.scrapers.players.create_driver')
