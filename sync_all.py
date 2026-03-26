@@ -12,10 +12,11 @@ import traceback
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from src.database import init_db, get_session, session_scope
-from src.database.models import Event, Team, Player, EventTeam, TeamPlayer
+from src.database.models import Event, Team, Player, EventTeam, TeamPlayer, Match, MatchMap, MatchPlayerStats, MatchVeto
 from src.scrapers.events import scrape_events, get_event_teams, get_event_results, get_event_details
 from src.scrapers.teams import scrape_team
 from src.scrapers.players import scrape_player
+from src.scrapers.matches import scrape_event_matches, scrape_match_detail, scrape_map_stats
 from src.scrapers.selenium_helpers import DriverPool, create_driver, random_delay
 
 logger = logging.getLogger(__name__)
@@ -47,17 +48,17 @@ def sync_full_event(event_id, headless=True, team_workers=3, player_workers=3, f
     event_driver = create_driver(headless=headless)
     try:
         # 0. Buscar detalhes do evento (location, prize_pool)
-        print("Etapa 0/4: Buscando detalhes do evento...")
+        print("Etapa 0/5: Buscando detalhes do evento...")
         event_details = get_event_details(event_id, headless=headless, driver=event_driver)
         random_delay(2.0, 4.0)
 
         # 1. Buscar times do evento
-        print("Etapa 1/4: Buscando times do evento...")
+        print("Etapa 1/5: Buscando times do evento...")
         team_ids = get_event_teams(event_id, headless=headless, driver=event_driver)
         random_delay(2.0, 4.0)
 
         # 2. Buscar placements e prizes
-        print("Etapa 2/4: Buscando placements e prizes...")
+        print("Etapa 2/5: Buscando placements e prizes...")
         results = get_event_results(event_id, headless=headless, driver=event_driver)
     finally:
         event_driver.quit()
@@ -84,7 +85,7 @@ def sync_full_event(event_id, headless=True, team_workers=3, player_workers=3, f
     print(f"  {len(results)} times com placement/prize\n")
 
     # 3. Sincronizar cada time (scraping em paralelo, DB no main thread)
-    print("Etapa 3/4: Sincronizando times e rosters...")
+    print("Etapa 3/5: Sincronizando times e rosters...")
     all_player_ids = []
 
     team_workers = max(1, int(team_workers))
@@ -186,7 +187,7 @@ def sync_full_event(event_id, headless=True, team_workers=3, player_workers=3, f
     skipped = len(unique_player_ids) - len(needed_ids)
     if skipped:
         print(f"  Pulando {skipped} jogadores que ja tem stats")
-    print(f"\nEtapa 4/4: Sincronizando stats de {len(needed_ids)} jogadores...")
+    print(f"\nEtapa 4/5: Sincronizando stats de {len(needed_ids)} jogadores...")
 
     player_workers = max(1, int(player_workers))
     scraped_players = {}
@@ -214,32 +215,185 @@ def sync_full_event(event_id, headless=True, team_workers=3, player_workers=3, f
 
     if not needed_ids:
         print("  Todos os jogadores ja tem stats. Use --force-players para re-coletar.")
+    else:
+        with DriverPool(size=player_workers, headless=headless) as pool:
+            with ThreadPoolExecutor(max_workers=player_workers) as executor:
+                futures = {executor.submit(_scrape_player_pooled, pool, pid): pid for pid in needed_ids}
+
+                for future in as_completed(futures):
+                    pid = futures[future]
+                    try:
+                        player_stats = future.result()
+                        if player_stats:
+                            scraped_players[pid] = player_stats
+                    except Exception as e:
+                        logger.warning("Falha ao coletar stats do jogador %d: %s", pid, e)
+
+        # Save all player stats in a single session
+        with session_scope() as session:
+            for pid, player_stats in scraped_players.items():
+                player = session.query(Player).filter_by(id=pid).first()
+                if player:
+                    for key, value in player_stats.items():
+                        if hasattr(player, key):
+                            setattr(player, key, value)
+
+    # 5. Sincronizar matches, mapas e stats por mapa
+    print(f"\nEtapa 5/5: Sincronizando matches do evento...")
+
+    match_driver = create_driver(headless=headless)
+    try:
+        match_list = scrape_event_matches(event_id, headless=headless, driver=match_driver)
+    except Exception as e:
+        logger.error("Erro ao buscar matches: %s", e)
+        match_list = []
+    finally:
+        match_driver.quit()
+
+    if not match_list:
+        print("  Nenhum match encontrado")
         print(f"\n{'='*70}")
         print(f"EVENTO {event_id} SINCRONIZADO COM SUCESSO!")
         print(f"{'='*70}\n")
         return
 
-    with DriverPool(size=player_workers, headless=headless) as pool:
-        with ThreadPoolExecutor(max_workers=player_workers) as executor:
-            futures = {executor.submit(_scrape_player_pooled, pool, pid): pid for pid in needed_ids}
-
-            for future in as_completed(futures):
-                pid = futures[future]
-                try:
-                    player_stats = future.result()
-                    if player_stats:
-                        scraped_players[pid] = player_stats
-                except Exception as e:
-                    logger.warning("Falha ao coletar stats do jogador %d: %s", pid, e)
-
-    # Save all player stats in a single session
+    # Filter out matches already in DB
     with session_scope() as session:
-        for pid, player_stats in scraped_players.items():
-            player = session.query(Player).filter_by(id=pid).first()
-            if player:
-                for key, value in player_stats.items():
-                    if hasattr(player, key):
-                        setattr(player, key, value)
+        existing_match_ids = {m.id for m in session.query(Match.id).filter(
+            Match.event_id == event_id
+        ).all()}
+    new_matches = [m for m in match_list if m['id'] not in existing_match_ids]
+    if len(match_list) - len(new_matches) > 0:
+        print(f"  Pulando {len(match_list) - len(new_matches)} matches ja no banco")
+    print(f"  {len(new_matches)} matches novos para processar")
+
+    if not new_matches:
+        print(f"\n{'='*70}")
+        print(f"EVENTO {event_id} SINCRONIZADO COM SUCESSO!")
+        print(f"{'='*70}\n")
+        return
+
+    # Resolve team names to IDs for matches missing team_id
+    with session_scope() as session:
+        for m in new_matches:
+            if not m.get('team1_id') and m.get('team1_name'):
+                team = session.query(Team).filter(Team.name == m['team1_name']).first()
+                if team:
+                    m['team1_id'] = team.id
+            if not m.get('team2_id') and m.get('team2_name'):
+                team = session.query(Team).filter(Team.name == m['team2_name']).first()
+                if team:
+                    m['team2_id'] = team.id
+            # Re-resolve winner
+            if m.get('team1_id') and m.get('team2_id') and m.get('score1') is not None and m.get('score2') is not None:
+                if m['score1'] > m['score2']:
+                    m['winner_id'] = m['team1_id']
+                elif m['score2'] > m['score1']:
+                    m['winner_id'] = m['team2_id']
+
+    with session_scope() as session:
+        for m in new_matches:
+            match = Match(
+                id=m['id'], event_id=event_id,
+                team1_id=m.get('team1_id'), team2_id=m.get('team2_id'),
+                score1=m.get('score1'), score2=m.get('score2'),
+                best_of=m.get('best_of'), date=m.get('date'),
+                winner_id=m.get('winner_id'), stars=m.get('stars'),
+            )
+            session.merge(match)
+
+    # Scrape each match detail + map stats
+    match_driver = create_driver(headless=headless)
+    try:
+        for idx, m in enumerate(new_matches, 1):
+            mid = m['id']
+            print(f"  [{idx}/{len(new_matches)}] Match {mid}...")
+
+            detail = scrape_match_detail(mid, headless=headless, driver=match_driver)
+            if not detail:
+                continue
+            random_delay(0.5, 1.5)
+
+            # Save vetos
+            with session_scope() as session:
+                for v in detail.get('vetos', []):
+                    veto_team_id = None
+                    if v.get('team_name'):
+                        team = session.query(Team).filter(
+                            Team.name.ilike(f"%{v['team_name']}%")
+                        ).first()
+                        if team:
+                            veto_team_id = team.id
+
+                    existing = session.query(MatchVeto).filter_by(
+                        match_id=mid, veto_number=v['veto_number']
+                    ).first()
+                    if not existing:
+                        session.add(MatchVeto(
+                            match_id=mid,
+                            veto_number=v['veto_number'],
+                            team_id=veto_team_id,
+                            action=v['action'],
+                            map_name=v['map_name'],
+                        ))
+
+            # Save maps and scrape map stats
+            for map_data in detail.get('maps', []):
+                mapstats_id = map_data.get('mapstats_id')
+                if not mapstats_id:
+                    continue
+
+                with session_scope() as session:
+                    existing_map = session.query(MatchMap).filter_by(id=mapstats_id).first()
+                    if existing_map:
+                        continue  # Already have this map's data
+
+                    mm = MatchMap(
+                        id=mapstats_id,
+                        match_id=mid,
+                        map_name=map_data.get('map_name', 'Unknown'),
+                        map_number=map_data.get('map_number', 0),
+                        team1_score=map_data.get('team1_score'),
+                        team2_score=map_data.get('team2_score'),
+                        team1_ct_score=map_data.get('team1_ct_score'),
+                        team1_t_score=map_data.get('team1_t_score'),
+                        team2_ct_score=map_data.get('team2_ct_score'),
+                        team2_t_score=map_data.get('team2_t_score'),
+                        picked_by=map_data.get('picked_by'),
+                        winner_id=map_data.get('winner_id'),
+                    )
+                    session.add(mm)
+
+                # Scrape map player stats
+                random_delay(0.5, 1.5)
+                player_stats = scrape_map_stats(mapstats_id, headless=headless, driver=match_driver)
+
+                if player_stats:
+                    with session_scope() as session:
+                        for ps in player_stats:
+                            existing = session.query(MatchPlayerStats).filter_by(
+                                map_id=mapstats_id, player_id=ps['player_id']
+                            ).first()
+                            if not existing:
+                                session.add(MatchPlayerStats(
+                                    map_id=mapstats_id,
+                                    player_id=ps['player_id'],
+                                    team_id=ps.get('team_id'),
+                                    kills=ps.get('kills'),
+                                    deaths=ps.get('deaths'),
+                                    assists=ps.get('assists'),
+                                    headshots=ps.get('headshots'),
+                                    flash_assists=ps.get('flash_assists'),
+                                    adr=ps.get('adr'),
+                                    kast=ps.get('kast'),
+                                    rating=ps.get('rating'),
+                                    opening_kills=ps.get('opening_kills'),
+                                    opening_deaths=ps.get('opening_deaths'),
+                                    multi_kill_rounds=ps.get('multi_kill_rounds'),
+                                    clutches_won=ps.get('clutches_won'),
+                                ))
+    finally:
+        match_driver.quit()
 
     print(f"\n{'='*70}")
     print(f"EVENTO {event_id} SINCRONIZADO COM SUCESSO!")

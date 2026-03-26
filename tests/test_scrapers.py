@@ -571,3 +571,92 @@ class TestScrapePlayer:
         assert result['id'] == 7998
         assert result['nickname'] == 's1mple'
         assert result['total_kills'] == 35647
+
+
+# ============================================================================
+# MATCHES SCRAPER TESTS
+# ============================================================================
+
+class TestScrapeEventMatches:
+    def test_parse_match_result(self):
+        from src.scrapers.matches import _parse_match_id_from_url
+        assert _parse_match_id_from_url("/matches/2389987/team-a-vs-team-b-event") == 2389987
+
+    def test_parse_match_id_none(self):
+        from src.scrapers.matches import _parse_match_id_from_url
+        assert _parse_match_id_from_url(None) is None
+
+    def test_parse_best_of(self):
+        from src.scrapers.matches import _parse_best_of
+        assert _parse_best_of("bo3") == 3
+        assert _parse_best_of("bo1") == 1
+        assert _parse_best_of("bo5") == 5
+        assert _parse_best_of("") is None
+
+
+class TestParseVeto:
+    def test_parse_veto_line(self):
+        from src.scrapers.matches import _parse_veto_line
+        result = _parse_veto_line("1. Vitality removed Ancient")
+        assert result['veto_number'] == 1
+        assert result['team_name'] == "Vitality"
+        assert result['action'] == "removed"
+        assert result['map_name'] == "Ancient"
+
+    def test_parse_veto_picked(self):
+        from src.scrapers.matches import _parse_veto_line
+        result = _parse_veto_line("3. Vitality picked Overpass")
+        assert result['action'] == "picked"
+        assert result['map_name'] == "Overpass"
+
+    def test_parse_veto_leftover(self):
+        from src.scrapers.matches import _parse_veto_line
+        result = _parse_veto_line("7. Anubis was left over")
+        assert result['action'] == "left over"
+        assert result['map_name'] == "Anubis"
+        assert result['team_name'] is None
+
+    def test_parse_veto_invalid(self):
+        from src.scrapers.matches import _parse_veto_line
+        result = _parse_veto_line("Best of 3 (LAN)")
+        assert result is None
+
+
+class TestParseHalfScores:
+    def test_parse_half_scores(self):
+        from src.scrapers.matches import _parse_half_scores
+        ct, t = _parse_half_scores("(10:5; 6:4)")
+        assert ct == 10
+        assert t == 6
+
+    def test_parse_half_scores_empty(self):
+        from src.scrapers.matches import _parse_half_scores
+        ct, t = _parse_half_scores("")
+        assert ct is None
+        assert t is None
+
+
+class TestParseMapPlayerStats:
+    def test_parse_kills_hs(self):
+        from src.scrapers.matches import _parse_kills_hs
+        kills, hs = _parse_kills_hs("25(12)")
+        assert kills == 25
+        assert hs == 12
+
+    def test_parse_kills_hs_no_parens(self):
+        from src.scrapers.matches import _parse_kills_hs
+        kills, hs = _parse_kills_hs("17")
+        assert kills == 17
+        assert hs == 0
+
+    def test_parse_assists_flash(self):
+        from src.scrapers.matches import _parse_kills_hs
+        assists, flash = _parse_kills_hs("9(3)")
+        assert assists == 9
+        assert flash == 3
+
+    def test_parse_opening_kd(self):
+        from src.scrapers.matches import _parse_opening_kd
+        ok, od = _parse_opening_kd("5:2")
+        assert ok == 5
+        assert od == 2

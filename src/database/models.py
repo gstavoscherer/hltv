@@ -177,3 +177,122 @@ class TeamPlayer(Base):
 
     def __repr__(self):
         return f"<TeamPlayer(team_id={self.team_id}, player_id={self.player_id})>"
+
+
+# ============================================================================
+# MATCH DATA
+# ============================================================================
+
+class Match(Base):
+    __tablename__ = 'matches'
+
+    id = Column(Integer, primary_key=True)
+    event_id = Column(Integer, ForeignKey('events.id'), nullable=False)
+    team1_id = Column(Integer, ForeignKey('teams.id'), nullable=True)
+    team2_id = Column(Integer, ForeignKey('teams.id'), nullable=True)
+
+    score1 = Column(Integer)
+    score2 = Column(Integer)
+    best_of = Column(Integer)
+    date = Column(Date)
+    winner_id = Column(Integer, ForeignKey('teams.id'), nullable=True)
+    stars = Column(Integer)
+
+    created_at = Column(DateTime, server_default=func.now())
+
+    event = relationship("Event")
+    team1 = relationship("Team", foreign_keys=[team1_id])
+    team2 = relationship("Team", foreign_keys=[team2_id])
+    winner = relationship("Team", foreign_keys=[winner_id])
+    maps = relationship("MatchMap", back_populates="match", cascade="all, delete-orphan")
+    vetos = relationship("MatchVeto", back_populates="match", cascade="all, delete-orphan")
+
+    def __repr__(self):
+        return f"<Match(id={self.id}, {self.team1_id} vs {self.team2_id})>"
+
+
+class MatchMap(Base):
+    __tablename__ = 'match_maps'
+
+    id = Column(Integer, primary_key=True)
+    match_id = Column(Integer, ForeignKey('matches.id'), nullable=False)
+    map_name = Column(String(50), nullable=False)
+    map_number = Column(Integer, nullable=False)
+
+    team1_score = Column(Integer)
+    team2_score = Column(Integer)
+    team1_ct_score = Column(Integer)
+    team1_t_score = Column(Integer)
+    team2_ct_score = Column(Integer)
+    team2_t_score = Column(Integer)
+
+    picked_by = Column(Integer, ForeignKey('teams.id'), nullable=True)
+    winner_id = Column(Integer, ForeignKey('teams.id'), nullable=True)
+
+    created_at = Column(DateTime, server_default=func.now())
+
+    match = relationship("Match", back_populates="maps")
+    picker = relationship("Team", foreign_keys=[picked_by])
+    winner = relationship("Team", foreign_keys=[winner_id])
+    player_stats = relationship("MatchPlayerStats", back_populates="match_map", cascade="all, delete-orphan")
+
+    def __repr__(self):
+        return f"<MatchMap(id={self.id}, map={self.map_name})>"
+
+
+class MatchPlayerStats(Base):
+    __tablename__ = 'match_player_stats'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    map_id = Column(Integer, ForeignKey('match_maps.id'), nullable=False)
+    player_id = Column(Integer, ForeignKey('players.id'), nullable=False)
+    team_id = Column(Integer, ForeignKey('teams.id'), nullable=False)
+
+    kills = Column(Integer)
+    deaths = Column(Integer)
+    assists = Column(Integer)
+    headshots = Column(Integer)
+    flash_assists = Column(Integer)
+    adr = Column(Float)
+    kast = Column(Float)
+    rating = Column(Float)
+    opening_kills = Column(Integer)
+    opening_deaths = Column(Integer)
+    multi_kill_rounds = Column(Integer)
+    clutches_won = Column(Integer)
+
+    created_at = Column(DateTime, server_default=func.now())
+
+    match_map = relationship("MatchMap", back_populates="player_stats")
+    player = relationship("Player")
+    team = relationship("Team")
+
+    __table_args__ = (
+        UniqueConstraint('map_id', 'player_id', name='uq_map_player_stats'),
+    )
+
+    def __repr__(self):
+        return f"<MatchPlayerStats(map_id={self.map_id}, player_id={self.player_id})>"
+
+
+class MatchVeto(Base):
+    __tablename__ = 'match_vetos'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    match_id = Column(Integer, ForeignKey('matches.id'), nullable=False)
+    veto_number = Column(Integer, nullable=False)
+    team_id = Column(Integer, ForeignKey('teams.id'), nullable=True)
+    action = Column(String(20), nullable=False)
+    map_name = Column(String(50), nullable=False)
+
+    created_at = Column(DateTime, server_default=func.now())
+
+    match = relationship("Match", back_populates="vetos")
+    team = relationship("Team")
+
+    __table_args__ = (
+        UniqueConstraint('match_id', 'veto_number', name='uq_match_veto_number'),
+    )
+
+    def __repr__(self):
+        return f"<MatchVeto(match_id={self.match_id}, #{self.veto_number} {self.action} {self.map_name})>"
