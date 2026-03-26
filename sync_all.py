@@ -23,7 +23,18 @@ logger = logging.getLogger(__name__)
 _DEFAULT_WORKERS = int(os.getenv("HLTV_WORKERS", "1"))
 
 
-def sync_full_event(event_id, headless=True, team_workers=3, player_workers=3):
+def _filter_players_needing_stats(session, player_ids, force=False):
+    """Return player IDs that don't have stats yet. With force=True, return all."""
+    if force or not player_ids:
+        return player_ids
+    players_without_stats = session.query(Player).filter(
+        Player.id.in_(player_ids),
+        Player.rating_2_0.is_(None)
+    ).all()
+    return [p.id for p in players_without_stats]
+
+
+def sync_full_event(event_id, headless=True, team_workers=3, player_workers=3, force_players=False):
     """
     Sincroniza TODOS os dados de um evento.
     Each database operation uses its own session for thread safety.
@@ -168,7 +179,14 @@ def sync_full_event(event_id, headless=True, team_workers=3, player_workers=3):
 
     # 4. Sincronizar stats de todos os jogadores
     unique_player_ids = list(set(all_player_ids))
-    print(f"\nEtapa 4/4: Sincronizando stats de {len(unique_player_ids)} jogadores...")
+
+    # Filter out players that already have stats
+    with session_scope() as session:
+        needed_ids = _filter_players_needing_stats(session, unique_player_ids, force=force_players)
+    skipped = len(unique_player_ids) - len(needed_ids)
+    if skipped:
+        print(f"  Pulando {skipped} jogadores que ja tem stats")
+    print(f"\nEtapa 4/4: Sincronizando stats de {len(needed_ids)} jogadores...")
 
     player_workers = max(1, int(player_workers))
     scraped_players = {}
@@ -194,9 +212,16 @@ def sync_full_event(event_id, headless=True, team_workers=3, player_workers=3):
         pool.checkin(driver)
         return None
 
+    if not needed_ids:
+        print("  Todos os jogadores ja tem stats. Use --force-players para re-coletar.")
+        print(f"\n{'='*70}")
+        print(f"EVENTO {event_id} SINCRONIZADO COM SUCESSO!")
+        print(f"{'='*70}\n")
+        return
+
     with DriverPool(size=player_workers, headless=headless) as pool:
         with ThreadPoolExecutor(max_workers=player_workers) as executor:
-            futures = {executor.submit(_scrape_player_pooled, pool, pid): pid for pid in unique_player_ids}
+            futures = {executor.submit(_scrape_player_pooled, pool, pid): pid for pid in needed_ids}
 
             for future in as_completed(futures):
                 pid = futures[future]
@@ -302,6 +327,8 @@ def main():
     parser.add_argument('--team-workers', type=int, help='Override threads para times')
     parser.add_argument('--player-workers', type=int, help='Override threads para jogadores')
     parser.add_argument('--init', action='store_true', help='Inicializar banco de dados antes de sync')
+    parser.add_argument('--force-players', action='store_true',
+                        help='Re-scrape players even if they already have stats')
 
     args = parser.parse_args()
 
@@ -325,7 +352,8 @@ def main():
 
         sync_full_event(
             args.event, headless=headless,
-            team_workers=team_workers, player_workers=player_workers
+            team_workers=team_workers, player_workers=player_workers,
+            force_players=args.force_players
         )
     else:
         sync_all_events(

@@ -268,6 +268,40 @@ class TestExtractTeamId:
         assert _extract_team_id_from_href("https://www.hltv.org/team/abc/name") is None
 
 
+class TestFilterPlayersNeedingStats:
+    """Filter out players that already have complete stats."""
+
+    def test_filters_players_with_rating(self):
+        from sync_all import _filter_players_needing_stats
+
+        mock_session = MagicMock()
+
+        # Player 2 has no rating — should be returned
+        player_without_stats = MagicMock()
+        player_without_stats.id = 2
+
+        mock_session.query.return_value.filter.return_value.all.return_value = [
+            player_without_stats
+        ]
+
+        result = _filter_players_needing_stats(mock_session, [1, 2])
+        assert result == [2]
+
+    def test_force_returns_all(self):
+        from sync_all import _filter_players_needing_stats
+
+        mock_session = MagicMock()
+        result = _filter_players_needing_stats(mock_session, [1, 2], force=True)
+        assert result == [1, 2]
+
+    def test_empty_list(self):
+        from sync_all import _filter_players_needing_stats
+
+        mock_session = MagicMock()
+        result = _filter_players_needing_stats(mock_session, [])
+        assert result == []
+
+
 class TestLocationFilter:
     def test_is_likely_location(self):
         from src.scrapers.events import _is_likely_location
