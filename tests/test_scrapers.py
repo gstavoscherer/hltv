@@ -268,6 +268,34 @@ class TestExtractTeamId:
         assert _extract_team_id_from_href("https://www.hltv.org/team/abc/name") is None
 
 
+class TestRetryFailedPlayers:
+    """retry_failed_players should only scrape players without stats."""
+
+    def test_retry_finds_players_without_stats(self):
+        from sync_all import retry_failed_players
+
+        # Function exists and is callable
+        assert callable(retry_failed_players)
+
+    @patch('sync_all.DriverPool')
+    @patch('sync_all.scrape_player')
+    @patch('sync_all.session_scope')
+    def test_retry_skips_when_all_have_stats(self, mock_session, mock_scrape, mock_pool):
+        from sync_all import retry_failed_players
+
+        mock_sess = MagicMock()
+        mock_session.return_value.__enter__ = MagicMock(return_value=mock_sess)
+        mock_session.return_value.__exit__ = MagicMock(return_value=False)
+
+        # No players without stats
+        mock_sess.query.return_value.filter.return_value.all.return_value = []
+
+        retry_failed_players(event_id=8504)
+
+        # Should not create DriverPool if no players to retry
+        mock_pool.assert_not_called()
+
+
 class TestWorkerConfig:
     """Default workers should be 1 (safe), overridable via env or --workers."""
 

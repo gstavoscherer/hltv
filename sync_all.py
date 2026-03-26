@@ -246,6 +246,85 @@ def sync_full_event(event_id, headless=True, team_workers=3, player_workers=3, f
     print(f"{'='*70}\n")
 
 
+def retry_failed_players(event_id=None, headless=True, player_workers=1):
+    """Retry scraping only players that have no stats (rating_2_0 IS NULL)."""
+    print(f"\n{'='*70}")
+    print("RETRY: Coletando jogadores sem stats")
+    print(f"{'='*70}\n")
+
+    with session_scope() as session:
+        query = session.query(Player).filter(Player.rating_2_0.is_(None))
+        if event_id:
+            # Filter to players from this event's teams
+            player_ids_in_event = (
+                session.query(TeamPlayer.player_id)
+                .join(EventTeam, EventTeam.team_id == TeamPlayer.team_id)
+                .filter(EventTeam.event_id == event_id)
+                .distinct()
+            )
+            query = query.filter(Player.id.in_(player_ids_in_event))
+        players = query.all()
+        needed_ids = [p.id for p in players]
+
+    if not needed_ids:
+        print("  Todos os jogadores ja tem stats!")
+        return
+
+    print(f"  {len(needed_ids)} jogadores sem stats para coletar\n")
+
+    player_workers = max(1, int(player_workers))
+    scraped_players = {}
+
+    def _scrape_player_pooled(pool, pid):
+        driver = pool.checkout()
+        for attempt in range(3):
+            try:
+                result = scrape_player(pid, headless=headless, max_retries=1, driver=driver)
+                pool.checkin(driver)
+                return result
+            except Exception as e:
+                logger.warning("Retry player %d attempt %d: %s", pid, attempt + 1, e)
+                if attempt < 2:
+                    time.sleep(2 * (attempt + 1))
+                    try:
+                        driver.get("https://www.hltv.org")
+                        time.sleep(2)
+                    except Exception:
+                        pool.mark_bad(driver)
+                        pool.checkin(driver)
+                        driver = pool.checkout()
+        pool.checkin(driver)
+        return None
+
+    with DriverPool(size=player_workers, headless=headless) as pool:
+        with ThreadPoolExecutor(max_workers=player_workers) as executor:
+            futures = {executor.submit(_scrape_player_pooled, pool, pid): pid for pid in needed_ids}
+
+            for future in as_completed(futures):
+                pid = futures[future]
+                try:
+                    player_stats = future.result()
+                    if player_stats:
+                        scraped_players[pid] = player_stats
+                except Exception as e:
+                    logger.warning("Falha ao coletar stats do jogador %d: %s", pid, e)
+
+    with session_scope() as session:
+        for pid, player_stats in scraped_players.items():
+            player = session.query(Player).filter_by(id=pid).first()
+            if player:
+                for key, value in player_stats.items():
+                    if hasattr(player, key):
+                        setattr(player, key, value)
+
+    failed = len(needed_ids) - len(scraped_players)
+    print(f"\n{'='*70}")
+    print(f"RETRY COMPLETO: {len(scraped_players)}/{len(needed_ids)} coletados")
+    if failed:
+        print(f"  {failed} ainda falharam")
+    print(f"{'='*70}\n")
+
+
 def sync_all_events(limit=None, headless=True, team_workers=3, player_workers=3):
     """Sincroniza TODOS OS EVENTOS e seus dados completos."""
     print("\n" + "="*70)
@@ -329,6 +408,8 @@ def main():
     parser.add_argument('--init', action='store_true', help='Inicializar banco de dados antes de sync')
     parser.add_argument('--force-players', action='store_true',
                         help='Re-scrape players even if they already have stats')
+    parser.add_argument('--retry-players', action='store_true',
+                        help='Only retry players without stats (skip event/team scraping)')
 
     args = parser.parse_args()
 
@@ -343,7 +424,12 @@ def main():
     team_workers = args.team_workers or args.workers
     player_workers = args.player_workers or args.workers
 
-    if args.event:
+    if args.retry_players:
+        retry_failed_players(
+            event_id=args.event, headless=headless,
+            player_workers=player_workers
+        )
+    elif args.event:
         # Ensure event record exists in DB before syncing
         with session_scope() as session:
             from src.database.models import Event
