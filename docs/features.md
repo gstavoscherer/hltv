@@ -26,6 +26,7 @@
 | Recent form | Stats ultimos 3 meses | `src/scrapers/player_form.py`, `PlayerFormSnapshot` | **FEITO** (272 snapshots) |
 | Historical rankings | Evolucao semanal do ranking | `sync_rankings.py`, `TeamRankingHistory`, API `/team/{id}/ranking-history` | **FEITO** (popula no proximo sync semanal) |
 | Role scraper | Detecta role na pagina do jogador | `src/scrapers/players.py` | **FEITO** (detecta no proximo sync de players) |
+| Pistol round win rate | Win rate de pistol rounds por time | `src/scrapers/pistol_stats.py`, `matches.py`, API `/team/{id}/pistol-stats` | **FEITO** (popula nos proximos syncs) |
 
 ## Como rodar
 
@@ -51,4 +52,9 @@ python3 sync_rankings.py
 
 ## Pistol round win rate
 
-Unico feature nao implementado. Requer scraper dedicado da pagina de stats do time no HLTV (`/stats/teams/pistols/{id}/{name}`). Prioridade baixa — impacto medio e os dados de rounds por mapa ja capturam parte dessa informacao.
+**FEITO** — Implementado via campos `team1_pistol_wins` / `team2_pistol_wins` no `MatchMap`. O scraper de match detail (`src/scrapers/matches.py`) extrai pistol round wins da pagina do match. Stats agregadas por time disponivel em `src/scrapers/pistol_stats.py` e via API `GET /api/cartola/team/{id}/pistol-stats`.
+
+Dados populam automaticamente nos proximos syncs de matches. Para ver stats atuais:
+```bash
+PYTHONPATH=/root/hltv python3 src/scrapers/pistol_stats.py
+```

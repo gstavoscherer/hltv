@@ -227,6 +227,9 @@ class MatchMap(Base):
     team2_ct_score = Column(Integer)
     team2_t_score = Column(Integer)
 
+    team1_pistol_wins = Column(Integer, default=0)  # pistol rounds won by team1 (0-2 per map)
+    team2_pistol_wins = Column(Integer, default=0)  # pistol rounds won by team2 (0-2 per map)
+
     picked_by = Column(Integer, ForeignKey('teams.id'), nullable=True)
     winner_id = Column(Integer, ForeignKey('teams.id'), nullable=True)
 

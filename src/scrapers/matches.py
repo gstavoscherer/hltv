@@ -91,6 +91,74 @@ def _parse_opening_kd(text):
     return 0, 0
 
 
+def _scrape_pistol_rounds(driver, map_holder):
+    """Try to extract pistol round wins from a map's stats section.
+
+    HLTV shows pistol round results in the map breakdown. This looks for
+    elements indicating which team won each pistol round (round 1 and round 13/16).
+
+    Returns (team1_pistol_wins, team2_pistol_wins). Falls back to (0, 0) on failure.
+    """
+    try:
+        # Strategy 1: Look for explicit "Pistol rounds" section in map stats
+        # HLTV sometimes shows a breakdown with pistol round icons
+        pistol_elems = map_holder.find_elements(By.CSS_SELECTOR, ".pistol-round, [class*='pistol']")
+        if pistol_elems:
+            t1_wins = 0
+            t2_wins = 0
+            for elem in pistol_elems:
+                text = elem.text.strip().lower()
+                classes = elem.get_attribute("class") or ""
+                # Check if this pistol round was won by team1 or team2
+                if "team1" in classes or "won1" in classes:
+                    t1_wins += 1
+                elif "team2" in classes or "won2" in classes:
+                    t2_wins += 1
+            if t1_wins > 0 or t2_wins > 0:
+                return t1_wins, t2_wins
+
+        # Strategy 2: Look for round history circles/indicators
+        # HLTV shows round-by-round results as small icons; pistol rounds are #1 and #13 (or #16)
+        round_history = map_holder.find_elements(By.CSS_SELECTOR, ".round-history-team-row")
+        if len(round_history) >= 2:
+            t1_wins = 0
+            t2_wins = 0
+            for row_idx, row in enumerate(round_history[:2]):
+                rounds = row.find_elements(By.CSS_SELECTOR, "img, [class*='round-history']")
+                if not rounds:
+                    continue
+                # Check first round (pistol round 1)
+                # Check round 13 (second half pistol) if available
+                pistol_indices = [0]
+                if len(rounds) >= 13:
+                    pistol_indices.append(12)
+
+                for pi in pistol_indices:
+                    if pi >= len(rounds):
+                        continue
+                    rnd = rounds[pi]
+                    title = (rnd.get_attribute("title") or "").lower()
+                    src = (rnd.get_attribute("src") or "").lower()
+                    cls = (rnd.get_attribute("class") or "").lower()
+
+                    # Won indicators: green, win, bomb, ct_win, t_win
+                    is_win = any(w in (title + src + cls) for w in ["win", "green", "won"])
+                    if is_win:
+                        if row_idx == 0:
+                            t1_wins += 1
+                        else:
+                            t2_wins += 1
+
+            if t1_wins > 0 or t2_wins > 0:
+                return t1_wins, t2_wins
+
+        return 0, 0
+
+    except Exception as e:
+        logger.debug("Could not extract pistol rounds: %s", e)
+        return 0, 0
+
+
 def scrape_event_matches(event_id, headless=True, driver=None):
     """Scrape all match results for an event from /results?event={id}."""
     owns_driver = driver is None
@@ -306,6 +374,11 @@ def scrape_match_detail(match_id, headless=True, driver=None):
                         map_data['mapstats_id'] = int(stats_match.group(1))
                 except Exception:
                     pass
+
+                # Pistol round wins
+                t1_pistol, t2_pistol = _scrape_pistol_rounds(driver, mh)
+                map_data['team1_pistol_wins'] = t1_pistol
+                map_data['team2_pistol_wins'] = t2_pistol
 
                 result['maps'].append(map_data)
             except Exception as e:

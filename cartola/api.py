@@ -17,6 +17,7 @@ from cartola.auth import (
     hash_password, verify_password, create_token, get_current_user,
 )
 from cartola.analytics import get_h2h, get_roster_stability, get_ranking_trend
+from src.scrapers.pistol_stats import get_team_pistol_stats
 
 router = APIRouter(prefix="/api/cartola", tags=["cartola"])
 
@@ -407,6 +408,18 @@ def roster_stability(team_id: int):
             raise HTTPException(404, f"Time {team_id} nao encontrado")
 
         stats = get_roster_stability(team_id, s)
+        stats["team"] = {"id": team.id, "name": team.name}
+        return stats
+
+
+@router.get("/team/{team_id}/pistol-stats")
+def pistol_stats(team_id: int):
+    with session_scope() as s:
+        team = s.query(Team).get(team_id)
+        if not team:
+            raise HTTPException(404, f"Time {team_id} nao encontrado")
+
+        stats = get_team_pistol_stats(team_id, s)
         stats["team"] = {"id": team.id, "name": team.name}
         return stats
 
