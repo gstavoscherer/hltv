@@ -4,7 +4,9 @@ API endpoints do CartolaCS.
 
 from datetime import datetime, timedelta
 
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 from sqlalchemy import func
 
@@ -15,6 +17,7 @@ from src.database.models import (
 )
 from cartola.auth import (
     hash_password, verify_password, create_token, get_current_user,
+    DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_REDIRECT_URI,
 )
 from cartola.analytics import get_h2h, get_roster_stability, get_ranking_trend
 from src.scrapers.pistol_stats import get_team_pistol_stats
@@ -35,6 +38,10 @@ class RegisterRequest(BaseModel):
 class LoginRequest(BaseModel):
     email: str
     password: str
+
+
+class LinkDiscordRequest(BaseModel):
+    discord_id: str
 
 
 # ============================================================================
@@ -67,6 +74,83 @@ def login(req: LoginRequest):
             raise HTTPException(401, "Credenciais invalidas")
         token = create_token(user.id, user.username)
     return {"token": token, "username": user.username}
+
+
+@router.get("/auth/discord")
+def discord_oauth_redirect():
+    if not DISCORD_CLIENT_ID:
+        raise HTTPException(500, "Discord OAuth2 nao configurado")
+    params = (
+        f"client_id={DISCORD_CLIENT_ID}"
+        f"&redirect_uri={DISCORD_REDIRECT_URI}"
+        f"&response_type=code"
+        f"&scope=identify%20email"
+    )
+    return RedirectResponse(f"https://discord.com/api/oauth2/authorize?{params}")
+
+
+@router.get("/auth/discord/callback")
+async def discord_oauth_callback(code: str):
+    if not DISCORD_CLIENT_ID or not DISCORD_CLIENT_SECRET:
+        raise HTTPException(500, "Discord OAuth2 nao configurado")
+
+    async with httpx.AsyncClient() as client:
+        token_resp = await client.post(
+            "https://discord.com/api/oauth2/token",
+            data={
+                "client_id": DISCORD_CLIENT_ID,
+                "client_secret": DISCORD_CLIENT_SECRET,
+                "grant_type": "authorization_code",
+                "code": code,
+                "redirect_uri": DISCORD_REDIRECT_URI,
+            },
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        )
+        if token_resp.status_code != 200:
+            raise HTTPException(400, "Falha ao obter token do Discord")
+        tokens = token_resp.json()
+
+        user_resp = await client.get(
+            "https://discord.com/api/users/@me",
+            headers={"Authorization": f"Bearer {tokens['access_token']}"},
+        )
+        if user_resp.status_code != 200:
+            raise HTTPException(400, "Falha ao obter dados do Discord")
+        discord_user = user_resp.json()
+
+    discord_id = discord_user["id"]
+    discord_username = discord_user.get("username", "")
+
+    with session_scope() as s:
+        existing = s.query(User).filter(User.discord_id == discord_id).first()
+        if existing:
+            token = create_token(existing.id, existing.username)
+            return RedirectResponse(f"/hltv/cartola/login?token={token}&username={existing.username}")
+
+        user = User(
+            username=discord_username,
+            email=f"{discord_id}@discord.oauth",
+            password_hash="discord-oauth",
+            discord_id=discord_id,
+        )
+        s.add(user)
+        s.flush()
+        token = create_token(user.id, user.username)
+
+    return RedirectResponse(f"/hltv/cartola/login?token={token}&username={discord_username}")
+
+
+@router.post("/auth/link-discord")
+def link_discord(req: LinkDiscordRequest, current_user=Depends(get_current_user)):
+    with session_scope() as s:
+        existing = s.query(User).filter(User.discord_id == req.discord_id).first()
+        if existing and existing.id != current_user["sub"]:
+            raise HTTPException(400, "Discord ja vinculado a outra conta")
+        user = s.query(User).filter(User.id == current_user["sub"]).first()
+        if not user:
+            raise HTTPException(404, "Usuario nao encontrado")
+        user.discord_id = req.discord_id
+    return {"message": "Discord vinculado com sucesso", "discord_id": req.discord_id}
 
 
 # ============================================================================

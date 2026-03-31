@@ -17,6 +17,7 @@ from cartola.tasks import weekly_maintenance
 from sync_rankings import update_rankings, recalculate_all_prices
 from src.scrapers.team_maps import update_all_team_map_stats
 from src.scrapers.player_form import update_all_player_forms
+from src.scrapers.role_classifier import update_all_roles
 
 logger = logging.getLogger(__name__)
 
@@ -129,8 +130,12 @@ def main():
     print("\n7. Atualizando player form snapshots...")
     update_all_player_forms(months=3)
 
-    # 8. Manutencao semanal CartolaCS
-    print("\n8. Manutencao semanal CartolaCS...")
+    # 8. Classificar roles dos jogadores
+    print("\n8. Classificando roles dos jogadores...")
+    update_all_roles()
+
+    # 9. Manutencao semanal CartolaCS
+    print("\n9. Manutencao semanal CartolaCS...")
     weekly_maintenance()
 
     print("\n=== SYNC SEMANAL CONCLUIDO ===")

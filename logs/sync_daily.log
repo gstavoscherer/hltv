@@ -1,0 +1,101 @@
+/usr/lib/python3/dist-packages/requests/__init__.py:87: RequestsDependencyWarning: urllib3 (2.6.3) or chardet (4.0.0) doesn't match a supported version!
+  warnings.warn("urllib3 ({}) or chardet ({}) doesn't match a supported "
+=== SYNC DIARIO ===
+
+1. Buscando eventos novos...
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+INFO: Chromedriver patched: 147.0.7727.24
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+Buscando eventos do archive: 2026-02-25 a 2026-03-27...
+WARNING: Cloudflare challenge did not resolve within 15s
+  Encontrados 0 links de eventos
+  0 eventos encontrados (MAJOR + INTLLAN)
+Nenhum evento novo encontrado.
+
+2. Inicializando mercado pra jogadores novos...
+Traceback (most recent call last):
+  File "/root/hltv/sync_daily.py", line 75, in <module>
+    main()
+  File "/root/hltv/sync_daily.py", line 65, in main
+    initialize_market()
+  File "/root/hltv/cartola/pricing.py", line 363, in initialize_market
+    price = calculate_initial_price(p, team, session=s)
+  File "/root/hltv/cartola/pricing.py", line 347, in calculate_initial_price
+    return _clamp(round(price, 2), MIN_PRICE, MAX_PRICE)
+TypeError: type complex doesn't define __round__ method
+/usr/lib/python3/dist-packages/requests/__init__.py:87: RequestsDependencyWarning: urllib3 (2.6.3) or chardet (4.0.0) doesn't match a supported version!
+  warnings.warn("urllib3 ({}) or chardet ({}) doesn't match a supported "
+=== SYNC DIARIO ===
+
+1. Buscando eventos novos...
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+INFO: Chromedriver patched: 147.0.7727.24
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+Buscando eventos do archive: 2026-02-26 a 2026-03-28...
+WARNING: Cloudflare challenge did not resolve within 15s
+  Encontrados 0 links de eventos
+  0 eventos encontrados (MAJOR + INTLLAN)
+Nenhum evento novo encontrado.
+
+2. Inicializando mercado pra jogadores novos...
+Traceback (most recent call last):
+  File "/root/hltv/sync_daily.py", line 75, in <module>
+    main()
+  File "/root/hltv/sync_daily.py", line 65, in main
+    initialize_market()
+  File "/root/hltv/cartola/pricing.py", line 363, in initialize_market
+    price = calculate_initial_price(p, team, session=s)
+  File "/root/hltv/cartola/pricing.py", line 347, in calculate_initial_price
+    return _clamp(round(price, 2), MIN_PRICE, MAX_PRICE)
+TypeError: type complex doesn't define __round__ method
+/usr/lib/python3/dist-packages/requests/__init__.py:87: RequestsDependencyWarning: urllib3 (2.6.3) or chardet (4.0.0) doesn't match a supported version!
+  warnings.warn("urllib3 ({}) or chardet ({}) doesn't match a supported "
+=== SYNC DIARIO ===
+
+1. Buscando eventos novos...
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+INFO: Chromedriver patched: 147.0.7727.24
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+Buscando eventos do archive: 2026-02-27 a 2026-03-29...
+WARNING: Cloudflare challenge did not resolve within 15s
+  Encontrados 0 links de eventos
+  0 eventos encontrados (MAJOR + INTLLAN)
+Nenhum evento novo encontrado.
+
+2. Inicializando mercado pra jogadores novos...
+Traceback (most recent call last):
+  File "/root/hltv/sync_daily.py", line 75, in <module>
+    main()
+  File "/root/hltv/sync_daily.py", line 65, in main
+    initialize_market()
+  File "/root/hltv/cartola/pricing.py", line 363, in initialize_market
+    price = calculate_initial_price(p, team, session=s)
+  File "/root/hltv/cartola/pricing.py", line 347, in calculate_initial_price
+    return _clamp(round(price, 2), MIN_PRICE, MAX_PRICE)
+TypeError: type complex doesn't define __round__ method
+mktemp: failed to create directory via template ‘/tmp/xvfb-run.XXXXXX’: No space left on device
+/usr/lib/python3/dist-packages/requests/__init__.py:87: RequestsDependencyWarning: urllib3 (2.6.3) or chardet (4.0.0) doesn't match a supported version!
+  warnings.warn("urllib3 ({}) or chardet ({}) doesn't match a supported "
+=== SYNC DIARIO ===
+
+1. Buscando eventos novos...
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+INFO: Chromedriver patched: 147.0.7727.24
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+Buscando eventos do archive: 2026-03-01 a 2026-03-31...
+WARNING: Cloudflare challenge did not resolve within 15s
+  Encontrados 0 links de eventos
+  0 eventos encontrados (MAJOR + INTLLAN)
+Nenhum evento novo encontrado.
+
+2. Inicializando mercado pra jogadores novos...
+Traceback (most recent call last):
+  File "/root/hltv/sync_daily.py", line 75, in <module>
+    main()
+  File "/root/hltv/sync_daily.py", line 65, in main
+    initialize_market()
+  File "/root/hltv/cartola/pricing.py", line 363, in initialize_market
+    price = calculate_initial_price(p, team, session=s)
+  File "/root/hltv/cartola/pricing.py", line 347, in calculate_initial_price
+    return _clamp(round(price, 2), MIN_PRICE, MAX_PRICE)
+TypeError: type complex doesn't define __round__ method

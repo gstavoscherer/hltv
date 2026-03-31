@@ -200,7 +200,7 @@ def _scrape_player_selenium(player_id, headless=True, max_retries=3, driver=None
             last_error = f"Timeout ao carregar pagina de stats do jogador {player_id}"
             logger.warning("Timeout tentativa %d/%d jogador %d", attempt, max_retries, player_id)
             cf_timeout = min(cf_timeout + 10, 45)  # progressive timeout
-            time.sleep(3 * attempt)
+            time.sleep(1 * attempt)
 
             # If using external driver and Cloudflare blocked, signal bad driver
             if not owns_driver:
@@ -209,7 +209,7 @@ def _scrape_player_selenium(player_id, headless=True, max_retries=3, driver=None
         except Exception as e:
             last_error = str(e)
             logger.warning("Erro tentativa %d/%d jogador %d: %s", attempt, max_retries, player_id, e)
-            time.sleep(2 * attempt)
+            time.sleep(1 * attempt)
 
             if not owns_driver:
                 raise

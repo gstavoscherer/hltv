@@ -1,0 +1,1900 @@
+/usr/lib/python3/dist-packages/requests/__init__.py:87: RequestsDependencyWarning: urllib3 (2.6.3) or chardet (4.0.0) doesn't match a supported version!
+  warnings.warn("urllib3 ({}) or chardet ({}) doesn't match a supported "
+=== SYNC SEMANAL ===
+
+1. Atualizando rankings HLTV...
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+INFO: Chromedriver patched: 146.0.7680.165
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+Buscando ranking HLTV: https://www.hltv.org/ranking/teams
+WARNING: Cloudflare challenge did not resolve within 15s
+ERROR: Erro ao buscar ranking: Message: 
+Stacktrace:
+#0 0x556f48a17a6a <unknown>
+#1 0x556f48426ab5 <unknown>
+#2 0x556f48479676 <unknown>
+#3 0x556f484798b1 <unknown>
+#4 0x556f484c4614 <unknown>
+#5 0x556f484c17b6 <unknown>
+#6 0x556f4846ccbf <unknown>
+#7 0x556f4846da81 <unknown>
+#8 0x556f489dda64 <unknown>
+#9 0x556f489e0951 <unknown>
+#10 0x556f489ca21e <unknown>
+#11 0x556f489e151e <unknown>
+#12 0x556f489b0be0 <unknown>
+#13 0x556f48a049b8 <unknown>
+#14 0x556f48a04b88 <unknown>
+#15 0x556f48a164de <unknown>
+#16 0x7fd4a40a9ac3 <unknown>
+
+Nenhum ranking encontrado.
+
+2. Atualizando times e rosters...
+Atualizando 229 times...
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+INFO: DriverPool: driver 1/1 ready
+
+  Tentativa 1/3 para time 4411...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 4411: Message: 
+Stacktrace:
+#0 0x558806949a6a <unknown>
+#1 0x558806358ab5 <unknown>
+#2 0x5588063ab676 <unknown>
+#3 0x5588063ab8b1 <unknown>
+#4 0x5588063f6614 <unknown>
+#5 0x5588063f37b6 <unknown>
+#6 0x55880639ecbf <unknown>
+#7 0x55880639fa81 <unknown>
+#8 0x55880690fa64 <unknown>
+#9 0x558806912951 <unknown>
+#10 0x5588068fc21e <unknown>
+#11 0x55880691351e <unknown>
+#12 0x5588068e2be0 <unknown>
+#13 0x5588069369b8 <unknown>
+#14 0x558806936b88 <unknown>
+#15 0x5588069484de <unknown>
+#16 0x7f9c6fcd6ac3 <unknown>
+
+WARNING: Erro ao atualizar time 4411: Message: 
+Stacktrace:
+#0 0x558806949a6a <unknown>
+#1 0x558806358ab5 <unknown>
+#2 0x5588063ab676 <unknown>
+#3 0x5588063ab8b1 <unknown>
+#4 0x5588063f6614 <unknown>
+#5 0x5588063f37b6 <unknown>
+#6 0x55880639ecbf <unknown>
+#7 0x55880639fa81 <unknown>
+#8 0x55880690fa64 <unknown>
+#9 0x558806912951 <unknown>
+#10 0x5588068fc21e <unknown>
+#11 0x55880691351e <unknown>
+#12 0x5588068e2be0 <unknown>
+#13 0x5588069369b8 <unknown>
+#14 0x558806936b88 <unknown>
+#15 0x5588069484de <unknown>
+#16 0x7f9c6fcd6ac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 4494...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 4494: Message: 
+Stacktrace:
+#0 0x55da12324a6a <unknown>
+#1 0x55da11d33ab5 <unknown>
+#2 0x55da11d86676 <unknown>
+#3 0x55da11d868b1 <unknown>
+#4 0x55da11dd1614 <unknown>
+#5 0x55da11dce7b6 <unknown>
+#6 0x55da11d79cbf <unknown>
+#7 0x55da11d7aa81 <unknown>
+#8 0x55da122eaa64 <unknown>
+#9 0x55da122ed951 <unknown>
+#10 0x55da122d721e <unknown>
+#11 0x55da122ee51e <unknown>
+#12 0x55da122bdbe0 <unknown>
+#13 0x55da123119b8 <unknown>
+#14 0x55da12311b88 <unknown>
+#15 0x55da123234de <unknown>
+#16 0x7f604066fac3 <unknown>
+
+WARNING: Erro ao atualizar time 4494: Message: 
+Stacktrace:
+#0 0x55da12324a6a <unknown>
+#1 0x55da11d33ab5 <unknown>
+#2 0x55da11d86676 <unknown>
+#3 0x55da11d868b1 <unknown>
+#4 0x55da11dd1614 <unknown>
+#5 0x55da11dce7b6 <unknown>
+#6 0x55da11d79cbf <unknown>
+#7 0x55da11d7aa81 <unknown>
+#8 0x55da122eaa64 <unknown>
+#9 0x55da122ed951 <unknown>
+#10 0x55da122d721e <unknown>
+#11 0x55da122ee51e <unknown>
+#12 0x55da122bdbe0 <unknown>
+#13 0x55da123119b8 <unknown>
+#14 0x55da12311b88 <unknown>
+#15 0x55da123234de <unknown>
+#16 0x7f604066fac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 4548...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 4548: Message: 
+Stacktrace:
+#0 0x5558340a5a6a <unknown>
+#1 0x555833ab4ab5 <unknown>
+#2 0x555833b07676 <unknown>
+#3 0x555833b078b1 <unknown>
+#4 0x555833b52614 <unknown>
+#5 0x555833b4f7b6 <unknown>
+#6 0x555833afacbf <unknown>
+#7 0x555833afba81 <unknown>
+#8 0x55583406ba64 <unknown>
+#9 0x55583406e951 <unknown>
+#10 0x55583405821e <unknown>
+#11 0x55583406f51e <unknown>
+#12 0x55583403ebe0 <unknown>
+#13 0x5558340929b8 <unknown>
+#14 0x555834092b88 <unknown>
+#15 0x5558340a44de <unknown>
+#16 0x7f5f83369ac3 <unknown>
+
+WARNING: Erro ao atualizar time 4548: Message: 
+Stacktrace:
+#0 0x5558340a5a6a <unknown>
+#1 0x555833ab4ab5 <unknown>
+#2 0x555833b07676 <unknown>
+#3 0x555833b078b1 <unknown>
+#4 0x555833b52614 <unknown>
+#5 0x555833b4f7b6 <unknown>
+#6 0x555833afacbf <unknown>
+#7 0x555833afba81 <unknown>
+#8 0x55583406ba64 <unknown>
+#9 0x55583406e951 <unknown>
+#10 0x55583405821e <unknown>
+#11 0x55583406f51e <unknown>
+#12 0x55583403ebe0 <unknown>
+#13 0x5558340929b8 <unknown>
+#14 0x555834092b88 <unknown>
+#15 0x5558340a44de <unknown>
+#16 0x7f5f83369ac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 4602...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 4602: Message: 
+Stacktrace:
+#0 0x55b87a003a6a <unknown>
+#1 0x55b879a12ab5 <unknown>
+#2 0x55b879a65676 <unknown>
+#3 0x55b879a658b1 <unknown>
+#4 0x55b879ab0614 <unknown>
+#5 0x55b879aad7b6 <unknown>
+#6 0x55b879a58cbf <unknown>
+#7 0x55b879a59a81 <unknown>
+#8 0x55b879fc9a64 <unknown>
+#9 0x55b879fcc951 <unknown>
+#10 0x55b879fb621e <unknown>
+#11 0x55b879fcd51e <unknown>
+#12 0x55b879f9cbe0 <unknown>
+#13 0x55b879ff09b8 <unknown>
+#14 0x55b879ff0b88 <unknown>
+#15 0x55b87a0024de <unknown>
+#16 0x7f83d4d73ac3 <unknown>
+
+WARNING: Erro ao atualizar time 4602: Message: 
+Stacktrace:
+#0 0x55b87a003a6a <unknown>
+#1 0x55b879a12ab5 <unknown>
+#2 0x55b879a65676 <unknown>
+#3 0x55b879a658b1 <unknown>
+#4 0x55b879ab0614 <unknown>
+#5 0x55b879aad7b6 <unknown>
+#6 0x55b879a58cbf <unknown>
+#7 0x55b879a59a81 <unknown>
+#8 0x55b879fc9a64 <unknown>
+#9 0x55b879fcc951 <unknown>
+#10 0x55b879fb621e <unknown>
+#11 0x55b879fcd51e <unknown>
+#12 0x55b879f9cbe0 <unknown>
+#13 0x55b879ff09b8 <unknown>
+#14 0x55b879ff0b88 <unknown>
+#15 0x55b87a0024de <unknown>
+#16 0x7f83d4d73ac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 4608...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 4608: Message: 
+Stacktrace:
+#0 0x5590e5205a6a <unknown>
+#1 0x5590e4c14ab5 <unknown>
+#2 0x5590e4c67676 <unknown>
+#3 0x5590e4c678b1 <unknown>
+#4 0x5590e4cb2614 <unknown>
+#5 0x5590e4caf7b6 <unknown>
+#6 0x5590e4c5acbf <unknown>
+#7 0x5590e4c5ba81 <unknown>
+#8 0x5590e51cba64 <unknown>
+#9 0x5590e51ce951 <unknown>
+#10 0x5590e51b821e <unknown>
+#11 0x5590e51cf51e <unknown>
+#12 0x5590e519ebe0 <unknown>
+#13 0x5590e51f29b8 <unknown>
+#14 0x5590e51f2b88 <unknown>
+#15 0x5590e52044de <unknown>
+#16 0x7f09fed35ac3 <unknown>
+
+WARNING: Erro ao atualizar time 4608: Message: 
+Stacktrace:
+#0 0x5590e5205a6a <unknown>
+#1 0x5590e4c14ab5 <unknown>
+#2 0x5590e4c67676 <unknown>
+#3 0x5590e4c678b1 <unknown>
+#4 0x5590e4cb2614 <unknown>
+#5 0x5590e4caf7b6 <unknown>
+#6 0x5590e4c5acbf <unknown>
+#7 0x5590e4c5ba81 <unknown>
+#8 0x5590e51cba64 <unknown>
+#9 0x5590e51ce951 <unknown>
+#10 0x5590e51b821e <unknown>
+#11 0x5590e51cf51e <unknown>
+#12 0x5590e519ebe0 <unknown>
+#13 0x5590e51f29b8 <unknown>
+#14 0x5590e51f2b88 <unknown>
+#15 0x5590e52044de <unknown>
+#16 0x7f09fed35ac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 4773...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 4773: Message: 
+Stacktrace:
+#0 0x55ba88663a6a <unknown>
+#1 0x55ba88072ab5 <unknown>
+#2 0x55ba880c5676 <unknown>
+#3 0x55ba880c58b1 <unknown>
+#4 0x55ba88110614 <unknown>
+#5 0x55ba8810d7b6 <unknown>
+#6 0x55ba880b8cbf <unknown>
+#7 0x55ba880b9a81 <unknown>
+#8 0x55ba88629a64 <unknown>
+#9 0x55ba8862c951 <unknown>
+#10 0x55ba8861621e <unknown>
+#11 0x55ba8862d51e <unknown>
+#12 0x55ba885fcbe0 <unknown>
+#13 0x55ba886509b8 <unknown>
+#14 0x55ba88650b88 <unknown>
+#15 0x55ba886624de <unknown>
+#16 0x7f8072144ac3 <unknown>
+
+WARNING: Erro ao atualizar time 4773: Message: 
+Stacktrace:
+#0 0x55ba88663a6a <unknown>
+#1 0x55ba88072ab5 <unknown>
+#2 0x55ba880c5676 <unknown>
+#3 0x55ba880c58b1 <unknown>
+#4 0x55ba88110614 <unknown>
+#5 0x55ba8810d7b6 <unknown>
+#6 0x55ba880b8cbf <unknown>
+#7 0x55ba880b9a81 <unknown>
+#8 0x55ba88629a64 <unknown>
+#9 0x55ba8862c951 <unknown>
+#10 0x55ba8861621e <unknown>
+#11 0x55ba8862d51e <unknown>
+#12 0x55ba885fcbe0 <unknown>
+#13 0x55ba886509b8 <unknown>
+#14 0x55ba88650b88 <unknown>
+#15 0x55ba886624de <unknown>
+#16 0x7f8072144ac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 4863...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 4863: Message: 
+Stacktrace:
+#0 0x56043b6f0a6a <unknown>
+#1 0x56043b0ffab5 <unknown>
+#2 0x56043b152676 <unknown>
+#3 0x56043b1528b1 <unknown>
+#4 0x56043b19d614 <unknown>
+#5 0x56043b19a7b6 <unknown>
+#6 0x56043b145cbf <unknown>
+#7 0x56043b146a81 <unknown>
+#8 0x56043b6b6a64 <unknown>
+#9 0x56043b6b9951 <unknown>
+#10 0x56043b6a321e <unknown>
+#11 0x56043b6ba51e <unknown>
+#12 0x56043b689be0 <unknown>
+#13 0x56043b6dd9b8 <unknown>
+#14 0x56043b6ddb88 <unknown>
+#15 0x56043b6ef4de <unknown>
+#16 0x7fa4e1155ac3 <unknown>
+
+WARNING: Erro ao atualizar time 4863: Message: 
+Stacktrace:
+#0 0x56043b6f0a6a <unknown>
+#1 0x56043b0ffab5 <unknown>
+#2 0x56043b152676 <unknown>
+#3 0x56043b1528b1 <unknown>
+#4 0x56043b19d614 <unknown>
+#5 0x56043b19a7b6 <unknown>
+#6 0x56043b145cbf <unknown>
+#7 0x56043b146a81 <unknown>
+#8 0x56043b6b6a64 <unknown>
+#9 0x56043b6b9951 <unknown>
+#10 0x56043b6a321e <unknown>
+#11 0x56043b6ba51e <unknown>
+#12 0x56043b689be0 <unknown>
+#13 0x56043b6dd9b8 <unknown>
+#14 0x56043b6ddb88 <unknown>
+#15 0x56043b6ef4de <unknown>
+#16 0x7fa4e1155ac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 4869...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 4869: Message: 
+Stacktrace:
+#0 0x55e54a0d6a6a <unknown>
+#1 0x55e549ae5ab5 <unknown>
+#2 0x55e549b38676 <unknown>
+#3 0x55e549b388b1 <unknown>
+#4 0x55e549b83614 <unknown>
+#5 0x55e549b807b6 <unknown>
+#6 0x55e549b2bcbf <unknown>
+#7 0x55e549b2ca81 <unknown>
+#8 0x55e54a09ca64 <unknown>
+#9 0x55e54a09f951 <unknown>
+#10 0x55e54a08921e <unknown>
+#11 0x55e54a0a051e <unknown>
+#12 0x55e54a06fbe0 <unknown>
+#13 0x55e54a0c39b8 <unknown>
+#14 0x55e54a0c3b88 <unknown>
+#15 0x55e54a0d54de <unknown>
+#16 0x7f5a91e4eac3 <unknown>
+
+WARNING: Erro ao atualizar time 4869: Message: 
+Stacktrace:
+#0 0x55e54a0d6a6a <unknown>
+#1 0x55e549ae5ab5 <unknown>
+#2 0x55e549b38676 <unknown>
+#3 0x55e549b388b1 <unknown>
+#4 0x55e549b83614 <unknown>
+#5 0x55e549b807b6 <unknown>
+#6 0x55e549b2bcbf <unknown>
+#7 0x55e549b2ca81 <unknown>
+#8 0x55e54a09ca64 <unknown>
+#9 0x55e54a09f951 <unknown>
+#10 0x55e54a08921e <unknown>
+#11 0x55e54a0a051e <unknown>
+#12 0x55e54a06fbe0 <unknown>
+#13 0x55e54a0c39b8 <unknown>
+#14 0x55e54a0c3b88 <unknown>
+#15 0x55e54a0d54de <unknown>
+#16 0x7f5a91e4eac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 4914...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 4914: Message: 
+Stacktrace:
+#0 0x5622816cfa6a <unknown>
+#1 0x5622810deab5 <unknown>
+#2 0x562281131676 <unknown>
+#3 0x5622811318b1 <unknown>
+#4 0x56228117c614 <unknown>
+#5 0x5622811797b6 <unknown>
+#6 0x562281124cbf <unknown>
+#7 0x562281125a81 <unknown>
+#8 0x562281695a64 <unknown>
+#9 0x562281698951 <unknown>
+#10 0x56228168221e <unknown>
+#11 0x56228169951e <unknown>
+#12 0x562281668be0 <unknown>
+#13 0x5622816bc9b8 <unknown>
+#14 0x5622816bcb88 <unknown>
+#15 0x5622816ce4de <unknown>
+#16 0x7f0bef9ddac3 <unknown>
+
+WARNING: Erro ao atualizar time 4914: Message: 
+Stacktrace:
+#0 0x5622816cfa6a <unknown>
+#1 0x5622810deab5 <unknown>
+#2 0x562281131676 <unknown>
+#3 0x5622811318b1 <unknown>
+#4 0x56228117c614 <unknown>
+#5 0x5622811797b6 <unknown>
+#6 0x562281124cbf <unknown>
+#7 0x562281125a81 <unknown>
+#8 0x562281695a64 <unknown>
+#9 0x562281698951 <unknown>
+#10 0x56228168221e <unknown>
+#11 0x56228169951e <unknown>
+#12 0x562281668be0 <unknown>
+#13 0x5622816bc9b8 <unknown>
+#14 0x5622816bcb88 <unknown>
+#15 0x5622816ce4de <unknown>
+#16 0x7f0bef9ddac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 4991...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 4991: Message: 
+Stacktrace:
+#0 0x559314e8ca6a <unknown>
+#1 0x55931489bab5 <unknown>
+#2 0x5593148ee676 <unknown>
+#3 0x5593148ee8b1 <unknown>
+#4 0x559314939614 <unknown>
+#5 0x5593149367b6 <unknown>
+#6 0x5593148e1cbf <unknown>
+#7 0x5593148e2a81 <unknown>
+#8 0x559314e52a64 <unknown>
+#9 0x559314e55951 <unknown>
+#10 0x559314e3f21e <unknown>
+#11 0x559314e5651e <unknown>
+#12 0x559314e25be0 <unknown>
+#13 0x559314e799b8 <unknown>
+#14 0x559314e79b88 <unknown>
+#15 0x559314e8b4de <unknown>
+#16 0x7f72b4260ac3 <unknown>
+
+WARNING: Erro ao atualizar time 4991: Message: 
+Stacktrace:
+#0 0x559314e8ca6a <unknown>
+#1 0x55931489bab5 <unknown>
+#2 0x5593148ee676 <unknown>
+#3 0x5593148ee8b1 <unknown>
+#4 0x559314939614 <unknown>
+#5 0x5593149367b6 <unknown>
+#6 0x5593148e1cbf <unknown>
+#7 0x5593148e2a81 <unknown>
+#8 0x559314e52a64 <unknown>
+#9 0x559314e55951 <unknown>
+#10 0x559314e3f21e <unknown>
+#11 0x559314e5651e <unknown>
+#12 0x559314e25be0 <unknown>
+#13 0x559314e799b8 <unknown>
+#14 0x559314e79b88 <unknown>
+#15 0x559314e8b4de <unknown>
+#16 0x7f72b4260ac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 5378...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 5378: Message: 
+Stacktrace:
+#0 0x55f321edfa6a <unknown>
+#1 0x55f3218eeab5 <unknown>
+#2 0x55f321941676 <unknown>
+#3 0x55f3219418b1 <unknown>
+#4 0x55f32198c614 <unknown>
+#5 0x55f3219897b6 <unknown>
+#6 0x55f321934cbf <unknown>
+#7 0x55f321935a81 <unknown>
+#8 0x55f321ea5a64 <unknown>
+#9 0x55f321ea8951 <unknown>
+#10 0x55f321e9221e <unknown>
+#11 0x55f321ea951e <unknown>
+#12 0x55f321e78be0 <unknown>
+#13 0x55f321ecc9b8 <unknown>
+#14 0x55f321eccb88 <unknown>
+#15 0x55f321ede4de <unknown>
+#16 0x7f64e91cdac3 <unknown>
+
+WARNING: Erro ao atualizar time 5378: Message: 
+Stacktrace:
+#0 0x55f321edfa6a <unknown>
+#1 0x55f3218eeab5 <unknown>
+#2 0x55f321941676 <unknown>
+#3 0x55f3219418b1 <unknown>
+#4 0x55f32198c614 <unknown>
+#5 0x55f3219897b6 <unknown>
+#6 0x55f321934cbf <unknown>
+#7 0x55f321935a81 <unknown>
+#8 0x55f321ea5a64 <unknown>
+#9 0x55f321ea8951 <unknown>
+#10 0x55f321e9221e <unknown>
+#11 0x55f321ea951e <unknown>
+#12 0x55f321e78be0 <unknown>
+#13 0x55f321ecc9b8 <unknown>
+#14 0x55f321eccb88 <unknown>
+#15 0x55f321ede4de <unknown>
+#16 0x7f64e91cdac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 5973...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 5973: Message: 
+Stacktrace:
+#0 0x55b9504afa6a <unknown>
+#1 0x55b94febeab5 <unknown>
+#2 0x55b94ff11676 <unknown>
+#3 0x55b94ff118b1 <unknown>
+#4 0x55b94ff5c614 <unknown>
+#5 0x55b94ff597b6 <unknown>
+#6 0x55b94ff04cbf <unknown>
+#7 0x55b94ff05a81 <unknown>
+#8 0x55b950475a64 <unknown>
+#9 0x55b950478951 <unknown>
+#10 0x55b95046221e <unknown>
+#11 0x55b95047951e <unknown>
+#12 0x55b950448be0 <unknown>
+#13 0x55b95049c9b8 <unknown>
+#14 0x55b95049cb88 <unknown>
+#15 0x55b9504ae4de <unknown>
+#16 0x7f2a00e03ac3 <unknown>
+
+WARNING: Erro ao atualizar time 5973: Message: 
+Stacktrace:
+#0 0x55b9504afa6a <unknown>
+#1 0x55b94febeab5 <unknown>
+#2 0x55b94ff11676 <unknown>
+#3 0x55b94ff118b1 <unknown>
+#4 0x55b94ff5c614 <unknown>
+#5 0x55b94ff597b6 <unknown>
+#6 0x55b94ff04cbf <unknown>
+#7 0x55b94ff05a81 <unknown>
+#8 0x55b950475a64 <unknown>
+#9 0x55b950478951 <unknown>
+#10 0x55b95046221e <unknown>
+#11 0x55b95047951e <unknown>
+#12 0x55b950448be0 <unknown>
+#13 0x55b95049c9b8 <unknown>
+#14 0x55b95049cb88 <unknown>
+#15 0x55b9504ae4de <unknown>
+#16 0x7f2a00e03ac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 5995...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 5995: Message: 
+Stacktrace:
+#0 0x55ab8263ca6a <unknown>
+#1 0x55ab8204bab5 <unknown>
+#2 0x55ab8209e676 <unknown>
+#3 0x55ab8209e8b1 <unknown>
+#4 0x55ab820e9614 <unknown>
+#5 0x55ab820e67b6 <unknown>
+#6 0x55ab82091cbf <unknown>
+#7 0x55ab82092a81 <unknown>
+#8 0x55ab82602a64 <unknown>
+#9 0x55ab82605951 <unknown>
+#10 0x55ab825ef21e <unknown>
+#11 0x55ab8260651e <unknown>
+#12 0x55ab825d5be0 <unknown>
+#13 0x55ab826299b8 <unknown>
+#14 0x55ab82629b88 <unknown>
+#15 0x55ab8263b4de <unknown>
+#16 0x7f0c38affac3 <unknown>
+
+WARNING: Erro ao atualizar time 5995: Message: 
+Stacktrace:
+#0 0x55ab8263ca6a <unknown>
+#1 0x55ab8204bab5 <unknown>
+#2 0x55ab8209e676 <unknown>
+#3 0x55ab8209e8b1 <unknown>
+#4 0x55ab820e9614 <unknown>
+#5 0x55ab820e67b6 <unknown>
+#6 0x55ab82091cbf <unknown>
+#7 0x55ab82092a81 <unknown>
+#8 0x55ab82602a64 <unknown>
+#9 0x55ab82605951 <unknown>
+#10 0x55ab825ef21e <unknown>
+#11 0x55ab8260651e <unknown>
+#12 0x55ab825d5be0 <unknown>
+#13 0x55ab826299b8 <unknown>
+#14 0x55ab82629b88 <unknown>
+#15 0x55ab8263b4de <unknown>
+#16 0x7f0c38affac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 6248...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 6248: Message: 
+Stacktrace:
+#0 0x564e067e0a6a <unknown>
+#1 0x564e061efab5 <unknown>
+#2 0x564e06242676 <unknown>
+#3 0x564e062428b1 <unknown>
+#4 0x564e0628d614 <unknown>
+#5 0x564e0628a7b6 <unknown>
+#6 0x564e06235cbf <unknown>
+#7 0x564e06236a81 <unknown>
+#8 0x564e067a6a64 <unknown>
+#9 0x564e067a9951 <unknown>
+#10 0x564e0679321e <unknown>
+#11 0x564e067aa51e <unknown>
+#12 0x564e06779be0 <unknown>
+#13 0x564e067cd9b8 <unknown>
+#14 0x564e067cdb88 <unknown>
+#15 0x564e067df4de <unknown>
+#16 0x7fac72608ac3 <unknown>
+
+WARNING: Erro ao atualizar time 6248: Message: 
+Stacktrace:
+#0 0x564e067e0a6a <unknown>
+#1 0x564e061efab5 <unknown>
+#2 0x564e06242676 <unknown>
+#3 0x564e062428b1 <unknown>
+#4 0x564e0628d614 <unknown>
+#5 0x564e0628a7b6 <unknown>
+#6 0x564e06235cbf <unknown>
+#7 0x564e06236a81 <unknown>
+#8 0x564e067a6a64 <unknown>
+#9 0x564e067a9951 <unknown>
+#10 0x564e0679321e <unknown>
+#11 0x564e067aa51e <unknown>
+#12 0x564e06779be0 <unknown>
+#13 0x564e067cd9b8 <unknown>
+#14 0x564e067cdb88 <unknown>
+#15 0x564e067df4de <unknown>
+#16 0x7fac72608ac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 6626...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 6626: Message: 
+Stacktrace:
+#0 0x55f6445cba6a <unknown>
+#1 0x55f643fdaab5 <unknown>
+#2 0x55f64402d676 <unknown>
+#3 0x55f64402d8b1 <unknown>
+#4 0x55f644078614 <unknown>
+#5 0x55f6440757b6 <unknown>
+#6 0x55f644020cbf <unknown>
+#7 0x55f644021a81 <unknown>
+#8 0x55f644591a64 <unknown>
+#9 0x55f644594951 <unknown>
+#10 0x55f64457e21e <unknown>
+#11 0x55f64459551e <unknown>
+#12 0x55f644564be0 <unknown>
+#13 0x55f6445b89b8 <unknown>
+#14 0x55f6445b8b88 <unknown>
+#15 0x55f6445ca4de <unknown>
+#16 0x7f1528bc3ac3 <unknown>
+
+WARNING: Erro ao atualizar time 6626: Message: 
+Stacktrace:
+#0 0x55f6445cba6a <unknown>
+#1 0x55f643fdaab5 <unknown>
+#2 0x55f64402d676 <unknown>
+#3 0x55f64402d8b1 <unknown>
+#4 0x55f644078614 <unknown>
+#5 0x55f6440757b6 <unknown>
+#6 0x55f644020cbf <unknown>
+#7 0x55f644021a81 <unknown>
+#8 0x55f644591a64 <unknown>
+#9 0x55f644594951 <unknown>
+#10 0x55f64457e21e <unknown>
+#11 0x55f64459551e <unknown>
+#12 0x55f644564be0 <unknown>
+#13 0x55f6445b89b8 <unknown>
+#14 0x55f6445b8b88 <unknown>
+#15 0x55f6445ca4de <unknown>
+#16 0x7f1528bc3ac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 6665...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 6665: Message: 
+Stacktrace:
+#0 0x55c1751d9a6a <unknown>
+#1 0x55c174be8ab5 <unknown>
+#2 0x55c174c3b676 <unknown>
+#3 0x55c174c3b8b1 <unknown>
+#4 0x55c174c86614 <unknown>
+#5 0x55c174c837b6 <unknown>
+#6 0x55c174c2ecbf <unknown>
+#7 0x55c174c2fa81 <unknown>
+#8 0x55c17519fa64 <unknown>
+#9 0x55c1751a2951 <unknown>
+#10 0x55c17518c21e <unknown>
+#11 0x55c1751a351e <unknown>
+#12 0x55c175172be0 <unknown>
+#13 0x55c1751c69b8 <unknown>
+#14 0x55c1751c6b88 <unknown>
+#15 0x55c1751d84de <unknown>
+#16 0x7f6e1d05eac3 <unknown>
+
+WARNING: Erro ao atualizar time 6665: Message: 
+Stacktrace:
+#0 0x55c1751d9a6a <unknown>
+#1 0x55c174be8ab5 <unknown>
+#2 0x55c174c3b676 <unknown>
+#3 0x55c174c3b8b1 <unknown>
+#4 0x55c174c86614 <unknown>
+#5 0x55c174c837b6 <unknown>
+#6 0x55c174c2ecbf <unknown>
+#7 0x55c174c2fa81 <unknown>
+#8 0x55c17519fa64 <unknown>
+#9 0x55c1751a2951 <unknown>
+#10 0x55c17518c21e <unknown>
+#11 0x55c1751a351e <unknown>
+#12 0x55c175172be0 <unknown>
+#13 0x55c1751c69b8 <unknown>
+#14 0x55c1751c6b88 <unknown>
+#15 0x55c1751d84de <unknown>
+#16 0x7f6e1d05eac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 6667...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 6667: Message: 
+Stacktrace:
+#0 0x557526842a6a <unknown>
+#1 0x557526251ab5 <unknown>
+#2 0x5575262a4676 <unknown>
+#3 0x5575262a48b1 <unknown>
+#4 0x5575262ef614 <unknown>
+#5 0x5575262ec7b6 <unknown>
+#6 0x557526297cbf <unknown>
+#7 0x557526298a81 <unknown>
+#8 0x557526808a64 <unknown>
+#9 0x55752680b951 <unknown>
+#10 0x5575267f521e <unknown>
+#11 0x55752680c51e <unknown>
+#12 0x5575267dbbe0 <unknown>
+#13 0x55752682f9b8 <unknown>
+#14 0x55752682fb88 <unknown>
+#15 0x5575268414de <unknown>
+#16 0x7f96d5f50ac3 <unknown>
+
+WARNING: Erro ao atualizar time 6667: Message: 
+Stacktrace:
+#0 0x557526842a6a <unknown>
+#1 0x557526251ab5 <unknown>
+#2 0x5575262a4676 <unknown>
+#3 0x5575262a48b1 <unknown>
+#4 0x5575262ef614 <unknown>
+#5 0x5575262ec7b6 <unknown>
+#6 0x557526297cbf <unknown>
+#7 0x557526298a81 <unknown>
+#8 0x557526808a64 <unknown>
+#9 0x55752680b951 <unknown>
+#10 0x5575267f521e <unknown>
+#11 0x55752680c51e <unknown>
+#12 0x5575267dbbe0 <unknown>
+#13 0x55752682f9b8 <unknown>
+#14 0x55752682fb88 <unknown>
+#15 0x5575268414de <unknown>
+#16 0x7f96d5f50ac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 6673...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 6673: Message: 
+Stacktrace:
+#0 0x5650776daa6a <unknown>
+#1 0x5650770e9ab5 <unknown>
+#2 0x56507713c676 <unknown>
+#3 0x56507713c8b1 <unknown>
+#4 0x565077187614 <unknown>
+#5 0x5650771847b6 <unknown>
+#6 0x56507712fcbf <unknown>
+#7 0x565077130a81 <unknown>
+#8 0x5650776a0a64 <unknown>
+#9 0x5650776a3951 <unknown>
+#10 0x56507768d21e <unknown>
+#11 0x5650776a451e <unknown>
+#12 0x565077673be0 <unknown>
+#13 0x5650776c79b8 <unknown>
+#14 0x5650776c7b88 <unknown>
+#15 0x5650776d94de <unknown>
+#16 0x7feb3a84eac3 <unknown>
+
+WARNING: Erro ao atualizar time 6673: Message: 
+Stacktrace:
+#0 0x5650776daa6a <unknown>
+#1 0x5650770e9ab5 <unknown>
+#2 0x56507713c676 <unknown>
+#3 0x56507713c8b1 <unknown>
+#4 0x565077187614 <unknown>
+#5 0x5650771847b6 <unknown>
+#6 0x56507712fcbf <unknown>
+#7 0x565077130a81 <unknown>
+#8 0x5650776a0a64 <unknown>
+#9 0x5650776a3951 <unknown>
+#10 0x56507768d21e <unknown>
+#11 0x5650776a451e <unknown>
+#12 0x565077673be0 <unknown>
+#13 0x5650776c79b8 <unknown>
+#14 0x5650776c7b88 <unknown>
+#15 0x5650776d94de <unknown>
+#16 0x7feb3a84eac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 6810...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 6810: Message: 
+Stacktrace:
+#0 0x5634d37ffa6a <unknown>
+#1 0x5634d320eab5 <unknown>
+#2 0x5634d3261676 <unknown>
+#3 0x5634d32618b1 <unknown>
+#4 0x5634d32ac614 <unknown>
+#5 0x5634d32a97b6 <unknown>
+#6 0x5634d3254cbf <unknown>
+#7 0x5634d3255a81 <unknown>
+#8 0x5634d37c5a64 <unknown>
+#9 0x5634d37c8951 <unknown>
+#10 0x5634d37b221e <unknown>
+#11 0x5634d37c951e <unknown>
+#12 0x5634d3798be0 <unknown>
+#13 0x5634d37ec9b8 <unknown>
+#14 0x5634d37ecb88 <unknown>
+#15 0x5634d37fe4de <unknown>
+#16 0x7f6994007ac3 <unknown>
+
+WARNING: Erro ao atualizar time 6810: Message: 
+Stacktrace:
+#0 0x5634d37ffa6a <unknown>
+#1 0x5634d320eab5 <unknown>
+#2 0x5634d3261676 <unknown>
+#3 0x5634d32618b1 <unknown>
+#4 0x5634d32ac614 <unknown>
+#5 0x5634d32a97b6 <unknown>
+#6 0x5634d3254cbf <unknown>
+#7 0x5634d3255a81 <unknown>
+#8 0x5634d37c5a64 <unknown>
+#9 0x5634d37c8951 <unknown>
+#10 0x5634d37b221e <unknown>
+#11 0x5634d37c951e <unknown>
+#12 0x5634d3798be0 <unknown>
+#13 0x5634d37ec9b8 <unknown>
+#14 0x5634d37ecb88 <unknown>
+#15 0x5634d37fe4de <unknown>
+#16 0x7f6994007ac3 <unknown>
+
+  Progresso: 20/229
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 7020...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 7020: Message: 
+Stacktrace:
+#0 0x55e14b646a6a <unknown>
+#1 0x55e14b055ab5 <unknown>
+#2 0x55e14b0a8676 <unknown>
+#3 0x55e14b0a88b1 <unknown>
+#4 0x55e14b0f3614 <unknown>
+#5 0x55e14b0f07b6 <unknown>
+#6 0x55e14b09bcbf <unknown>
+#7 0x55e14b09ca81 <unknown>
+#8 0x55e14b60ca64 <unknown>
+#9 0x55e14b60f951 <unknown>
+#10 0x55e14b5f921e <unknown>
+#11 0x55e14b61051e <unknown>
+#12 0x55e14b5dfbe0 <unknown>
+#13 0x55e14b6339b8 <unknown>
+#14 0x55e14b633b88 <unknown>
+#15 0x55e14b6454de <unknown>
+#16 0x7f0e43ce7ac3 <unknown>
+
+WARNING: Erro ao atualizar time 7020: Message: 
+Stacktrace:
+#0 0x55e14b646a6a <unknown>
+#1 0x55e14b055ab5 <unknown>
+#2 0x55e14b0a8676 <unknown>
+#3 0x55e14b0a88b1 <unknown>
+#4 0x55e14b0f3614 <unknown>
+#5 0x55e14b0f07b6 <unknown>
+#6 0x55e14b09bcbf <unknown>
+#7 0x55e14b09ca81 <unknown>
+#8 0x55e14b60ca64 <unknown>
+#9 0x55e14b60f951 <unknown>
+#10 0x55e14b5f921e <unknown>
+#11 0x55e14b61051e <unknown>
+#12 0x55e14b5dfbe0 <unknown>
+#13 0x55e14b6339b8 <unknown>
+#14 0x55e14b633b88 <unknown>
+#15 0x55e14b6454de <unknown>
+#16 0x7f0e43ce7ac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 7175...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 7175: Message: 
+Stacktrace:
+#0 0x557e62ccda6a <unknown>
+#1 0x557e626dcab5 <unknown>
+#2 0x557e6272f676 <unknown>
+#3 0x557e6272f8b1 <unknown>
+#4 0x557e6277a614 <unknown>
+#5 0x557e627777b6 <unknown>
+#6 0x557e62722cbf <unknown>
+#7 0x557e62723a81 <unknown>
+#8 0x557e62c93a64 <unknown>
+#9 0x557e62c96951 <unknown>
+#10 0x557e62c8021e <unknown>
+#11 0x557e62c9751e <unknown>
+#12 0x557e62c66be0 <unknown>
+#13 0x557e62cba9b8 <unknown>
+#14 0x557e62cbab88 <unknown>
+#15 0x557e62ccc4de <unknown>
+#16 0x7fcfff9e0ac3 <unknown>
+
+WARNING: Erro ao atualizar time 7175: Message: 
+Stacktrace:
+#0 0x557e62ccda6a <unknown>
+#1 0x557e626dcab5 <unknown>
+#2 0x557e6272f676 <unknown>
+#3 0x557e6272f8b1 <unknown>
+#4 0x557e6277a614 <unknown>
+#5 0x557e627777b6 <unknown>
+#6 0x557e62722cbf <unknown>
+#7 0x557e62723a81 <unknown>
+#8 0x557e62c93a64 <unknown>
+#9 0x557e62c96951 <unknown>
+#10 0x557e62c8021e <unknown>
+#11 0x557e62c9751e <unknown>
+#12 0x557e62c66be0 <unknown>
+#13 0x557e62cba9b8 <unknown>
+#14 0x557e62cbab88 <unknown>
+#15 0x557e62ccc4de <unknown>
+#16 0x7fcfff9e0ac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 7176...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 7176: Message: 
+Stacktrace:
+#0 0x55f6dae85a6a <unknown>
+#1 0x55f6da894ab5 <unknown>
+#2 0x55f6da8e7676 <unknown>
+#3 0x55f6da8e78b1 <unknown>
+#4 0x55f6da932614 <unknown>
+#5 0x55f6da92f7b6 <unknown>
+#6 0x55f6da8dacbf <unknown>
+#7 0x55f6da8dba81 <unknown>
+#8 0x55f6dae4ba64 <unknown>
+#9 0x55f6dae4e951 <unknown>
+#10 0x55f6dae3821e <unknown>
+#11 0x55f6dae4f51e <unknown>
+#12 0x55f6dae1ebe0 <unknown>
+#13 0x55f6dae729b8 <unknown>
+#14 0x55f6dae72b88 <unknown>
+#15 0x55f6dae844de <unknown>
+#16 0x7fb996444ac3 <unknown>
+
+WARNING: Erro ao atualizar time 7176: Message: 
+Stacktrace:
+#0 0x55f6dae85a6a <unknown>
+#1 0x55f6da894ab5 <unknown>
+#2 0x55f6da8e7676 <unknown>
+#3 0x55f6da8e78b1 <unknown>
+#4 0x55f6da932614 <unknown>
+#5 0x55f6da92f7b6 <unknown>
+#6 0x55f6da8dacbf <unknown>
+#7 0x55f6da8dba81 <unknown>
+#8 0x55f6dae4ba64 <unknown>
+#9 0x55f6dae4e951 <unknown>
+#10 0x55f6dae3821e <unknown>
+#11 0x55f6dae4f51e <unknown>
+#12 0x55f6dae1ebe0 <unknown>
+#13 0x55f6dae729b8 <unknown>
+#14 0x55f6dae72b88 <unknown>
+#15 0x55f6dae844de <unknown>
+#16 0x7fb996444ac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 7187...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 7187: Message: 
+Stacktrace:
+#0 0x560ae092aa6a <unknown>
+#1 0x560ae0339ab5 <unknown>
+#2 0x560ae038c676 <unknown>
+#3 0x560ae038c8b1 <unknown>
+#4 0x560ae03d7614 <unknown>
+#5 0x560ae03d47b6 <unknown>
+#6 0x560ae037fcbf <unknown>
+#7 0x560ae0380a81 <unknown>
+#8 0x560ae08f0a64 <unknown>
+#9 0x560ae08f3951 <unknown>
+#10 0x560ae08dd21e <unknown>
+#11 0x560ae08f451e <unknown>
+#12 0x560ae08c3be0 <unknown>
+#13 0x560ae09179b8 <unknown>
+#14 0x560ae0917b88 <unknown>
+#15 0x560ae09294de <unknown>
+#16 0x7f794ef0eac3 <unknown>
+
+WARNING: Erro ao atualizar time 7187: Message: 
+Stacktrace:
+#0 0x560ae092aa6a <unknown>
+#1 0x560ae0339ab5 <unknown>
+#2 0x560ae038c676 <unknown>
+#3 0x560ae038c8b1 <unknown>
+#4 0x560ae03d7614 <unknown>
+#5 0x560ae03d47b6 <unknown>
+#6 0x560ae037fcbf <unknown>
+#7 0x560ae0380a81 <unknown>
+#8 0x560ae08f0a64 <unknown>
+#9 0x560ae08f3951 <unknown>
+#10 0x560ae08dd21e <unknown>
+#11 0x560ae08f451e <unknown>
+#12 0x560ae08c3be0 <unknown>
+#13 0x560ae09179b8 <unknown>
+#14 0x560ae0917b88 <unknown>
+#15 0x560ae09294de <unknown>
+#16 0x7f794ef0eac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 7532...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 7532: Message: 
+Stacktrace:
+#0 0x55e9e8cada6a <unknown>
+#1 0x55e9e86bcab5 <unknown>
+#2 0x55e9e870f676 <unknown>
+#3 0x55e9e870f8b1 <unknown>
+#4 0x55e9e875a614 <unknown>
+#5 0x55e9e87577b6 <unknown>
+#6 0x55e9e8702cbf <unknown>
+#7 0x55e9e8703a81 <unknown>
+#8 0x55e9e8c73a64 <unknown>
+#9 0x55e9e8c76951 <unknown>
+#10 0x55e9e8c6021e <unknown>
+#11 0x55e9e8c7751e <unknown>
+#12 0x55e9e8c46be0 <unknown>
+#13 0x55e9e8c9a9b8 <unknown>
+#14 0x55e9e8c9ab88 <unknown>
+#15 0x55e9e8cac4de <unknown>
+#16 0x7fef91b55ac3 <unknown>
+
+WARNING: Erro ao atualizar time 7532: Message: 
+Stacktrace:
+#0 0x55e9e8cada6a <unknown>
+#1 0x55e9e86bcab5 <unknown>
+#2 0x55e9e870f676 <unknown>
+#3 0x55e9e870f8b1 <unknown>
+#4 0x55e9e875a614 <unknown>
+#5 0x55e9e87577b6 <unknown>
+#6 0x55e9e8702cbf <unknown>
+#7 0x55e9e8703a81 <unknown>
+#8 0x55e9e8c73a64 <unknown>
+#9 0x55e9e8c76951 <unknown>
+#10 0x55e9e8c6021e <unknown>
+#11 0x55e9e8c7751e <unknown>
+#12 0x55e9e8c46be0 <unknown>
+#13 0x55e9e8c9a9b8 <unknown>
+#14 0x55e9e8c9ab88 <unknown>
+#15 0x55e9e8cac4de <unknown>
+#16 0x7fef91b55ac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 7801...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 7801: Message: 
+Stacktrace:
+#0 0x55746e95ca6a <unknown>
+#1 0x55746e36bab5 <unknown>
+#2 0x55746e3be676 <unknown>
+#3 0x55746e3be8b1 <unknown>
+#4 0x55746e409614 <unknown>
+#5 0x55746e4067b6 <unknown>
+#6 0x55746e3b1cbf <unknown>
+#7 0x55746e3b2a81 <unknown>
+#8 0x55746e922a64 <unknown>
+#9 0x55746e925951 <unknown>
+#10 0x55746e90f21e <unknown>
+#11 0x55746e92651e <unknown>
+#12 0x55746e8f5be0 <unknown>
+#13 0x55746e9499b8 <unknown>
+#14 0x55746e949b88 <unknown>
+#15 0x55746e95b4de <unknown>
+#16 0x7f49f4678ac3 <unknown>
+
+WARNING: Erro ao atualizar time 7801: Message: 
+Stacktrace:
+#0 0x55746e95ca6a <unknown>
+#1 0x55746e36bab5 <unknown>
+#2 0x55746e3be676 <unknown>
+#3 0x55746e3be8b1 <unknown>
+#4 0x55746e409614 <unknown>
+#5 0x55746e4067b6 <unknown>
+#6 0x55746e3b1cbf <unknown>
+#7 0x55746e3b2a81 <unknown>
+#8 0x55746e922a64 <unknown>
+#9 0x55746e925951 <unknown>
+#10 0x55746e90f21e <unknown>
+#11 0x55746e92651e <unknown>
+#12 0x55746e8f5be0 <unknown>
+#13 0x55746e9499b8 <unknown>
+#14 0x55746e949b88 <unknown>
+#15 0x55746e95b4de <unknown>
+#16 0x7f49f4678ac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 7865...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 7865: Message: 
+Stacktrace:
+#0 0x5631bfbbba6a <unknown>
+#1 0x5631bf5caab5 <unknown>
+#2 0x5631bf61d676 <unknown>
+#3 0x5631bf61d8b1 <unknown>
+#4 0x5631bf668614 <unknown>
+#5 0x5631bf6657b6 <unknown>
+#6 0x5631bf610cbf <unknown>
+#7 0x5631bf611a81 <unknown>
+#8 0x5631bfb81a64 <unknown>
+#9 0x5631bfb84951 <unknown>
+#10 0x5631bfb6e21e <unknown>
+#11 0x5631bfb8551e <unknown>
+#12 0x5631bfb54be0 <unknown>
+#13 0x5631bfba89b8 <unknown>
+#14 0x5631bfba8b88 <unknown>
+#15 0x5631bfbba4de <unknown>
+#16 0x7f695bcebac3 <unknown>
+
+WARNING: Erro ao atualizar time 7865: Message: 
+Stacktrace:
+#0 0x5631bfbbba6a <unknown>
+#1 0x5631bf5caab5 <unknown>
+#2 0x5631bf61d676 <unknown>
+#3 0x5631bf61d8b1 <unknown>
+#4 0x5631bf668614 <unknown>
+#5 0x5631bf6657b6 <unknown>
+#6 0x5631bf610cbf <unknown>
+#7 0x5631bf611a81 <unknown>
+#8 0x5631bfb81a64 <unknown>
+#9 0x5631bfb84951 <unknown>
+#10 0x5631bfb6e21e <unknown>
+#11 0x5631bfb8551e <unknown>
+#12 0x5631bfb54be0 <unknown>
+#13 0x5631bfba89b8 <unknown>
+#14 0x5631bfba8b88 <unknown>
+#15 0x5631bfbba4de <unknown>
+#16 0x7f695bcebac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 7969...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 7969: Message: 
+Stacktrace:
+#0 0x559484e1ba6a <unknown>
+#1 0x55948482aab5 <unknown>
+#2 0x55948487d676 <unknown>
+#3 0x55948487d8b1 <unknown>
+#4 0x5594848c8614 <unknown>
+#5 0x5594848c57b6 <unknown>
+#6 0x559484870cbf <unknown>
+#7 0x559484871a81 <unknown>
+#8 0x559484de1a64 <unknown>
+#9 0x559484de4951 <unknown>
+#10 0x559484dce21e <unknown>
+#11 0x559484de551e <unknown>
+#12 0x559484db4be0 <unknown>
+#13 0x559484e089b8 <unknown>
+#14 0x559484e08b88 <unknown>
+#15 0x559484e1a4de <unknown>
+#16 0x7f4d4d85fac3 <unknown>
+
+WARNING: Erro ao atualizar time 7969: Message: 
+Stacktrace:
+#0 0x559484e1ba6a <unknown>
+#1 0x55948482aab5 <unknown>
+#2 0x55948487d676 <unknown>
+#3 0x55948487d8b1 <unknown>
+#4 0x5594848c8614 <unknown>
+#5 0x5594848c57b6 <unknown>
+#6 0x559484870cbf <unknown>
+#7 0x559484871a81 <unknown>
+#8 0x559484de1a64 <unknown>
+#9 0x559484de4951 <unknown>
+#10 0x559484dce21e <unknown>
+#11 0x559484de551e <unknown>
+#12 0x559484db4be0 <unknown>
+#13 0x559484e089b8 <unknown>
+#14 0x559484e08b88 <unknown>
+#15 0x559484e1a4de <unknown>
+#16 0x7f4d4d85fac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 8113...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 8113: Message: 
+Stacktrace:
+#0 0x5562994a5a6a <unknown>
+#1 0x556298eb4ab5 <unknown>
+#2 0x556298f07676 <unknown>
+#3 0x556298f078b1 <unknown>
+#4 0x556298f52614 <unknown>
+#5 0x556298f4f7b6 <unknown>
+#6 0x556298efacbf <unknown>
+#7 0x556298efba81 <unknown>
+#8 0x55629946ba64 <unknown>
+#9 0x55629946e951 <unknown>
+#10 0x55629945821e <unknown>
+#11 0x55629946f51e <unknown>
+#12 0x55629943ebe0 <unknown>
+#13 0x5562994929b8 <unknown>
+#14 0x556299492b88 <unknown>
+#15 0x5562994a44de <unknown>
+#16 0x7fc165f5aac3 <unknown>
+
+WARNING: Erro ao atualizar time 8113: Message: 
+Stacktrace:
+#0 0x5562994a5a6a <unknown>
+#1 0x556298eb4ab5 <unknown>
+#2 0x556298f07676 <unknown>
+#3 0x556298f078b1 <unknown>
+#4 0x556298f52614 <unknown>
+#5 0x556298f4f7b6 <unknown>
+#6 0x556298efacbf <unknown>
+#7 0x556298efba81 <unknown>
+#8 0x55629946ba64 <unknown>
+#9 0x55629946e951 <unknown>
+#10 0x55629945821e <unknown>
+#11 0x55629946f51e <unknown>
+#12 0x55629943ebe0 <unknown>
+#13 0x5562994929b8 <unknown>
+#14 0x556299492b88 <unknown>
+#15 0x5562994a44de <unknown>
+#16 0x7fc165f5aac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 8297...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 8297: Message: 
+Stacktrace:
+#0 0x55f19fa0fa6a <unknown>
+#1 0x55f19f41eab5 <unknown>
+#2 0x55f19f471676 <unknown>
+#3 0x55f19f4718b1 <unknown>
+#4 0x55f19f4bc614 <unknown>
+#5 0x55f19f4b97b6 <unknown>
+#6 0x55f19f464cbf <unknown>
+#7 0x55f19f465a81 <unknown>
+#8 0x55f19f9d5a64 <unknown>
+#9 0x55f19f9d8951 <unknown>
+#10 0x55f19f9c221e <unknown>
+#11 0x55f19f9d951e <unknown>
+#12 0x55f19f9a8be0 <unknown>
+#13 0x55f19f9fc9b8 <unknown>
+#14 0x55f19f9fcb88 <unknown>
+#15 0x55f19fa0e4de <unknown>
+#16 0x7f4200879ac3 <unknown>
+
+WARNING: Erro ao atualizar time 8297: Message: 
+Stacktrace:
+#0 0x55f19fa0fa6a <unknown>
+#1 0x55f19f41eab5 <unknown>
+#2 0x55f19f471676 <unknown>
+#3 0x55f19f4718b1 <unknown>
+#4 0x55f19f4bc614 <unknown>
+#5 0x55f19f4b97b6 <unknown>
+#6 0x55f19f464cbf <unknown>
+#7 0x55f19f465a81 <unknown>
+#8 0x55f19f9d5a64 <unknown>
+#9 0x55f19f9d8951 <unknown>
+#10 0x55f19f9c221e <unknown>
+#11 0x55f19f9d951e <unknown>
+#12 0x55f19f9a8be0 <unknown>
+#13 0x55f19f9fc9b8 <unknown>
+#14 0x55f19f9fcb88 <unknown>
+#15 0x55f19fa0e4de <unknown>
+#16 0x7f4200879ac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 8474...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 8474: Message: 
+Stacktrace:
+#0 0x559409a09a6a <unknown>
+#1 0x559409418ab5 <unknown>
+#2 0x55940946b676 <unknown>
+#3 0x55940946b8b1 <unknown>
+#4 0x5594094b6614 <unknown>
+#5 0x5594094b37b6 <unknown>
+#6 0x55940945ecbf <unknown>
+#7 0x55940945fa81 <unknown>
+#8 0x5594099cfa64 <unknown>
+#9 0x5594099d2951 <unknown>
+#10 0x5594099bc21e <unknown>
+#11 0x5594099d351e <unknown>
+#12 0x5594099a2be0 <unknown>
+#13 0x5594099f69b8 <unknown>
+#14 0x5594099f6b88 <unknown>
+#15 0x559409a084de <unknown>
+#16 0x7fab83430ac3 <unknown>
+
+WARNING: Erro ao atualizar time 8474: Message: 
+Stacktrace:
+#0 0x559409a09a6a <unknown>
+#1 0x559409418ab5 <unknown>
+#2 0x55940946b676 <unknown>
+#3 0x55940946b8b1 <unknown>
+#4 0x5594094b6614 <unknown>
+#5 0x5594094b37b6 <unknown>
+#6 0x55940945ecbf <unknown>
+#7 0x55940945fa81 <unknown>
+#8 0x5594099cfa64 <unknown>
+#9 0x5594099d2951 <unknown>
+#10 0x5594099bc21e <unknown>
+#11 0x5594099d351e <unknown>
+#12 0x5594099a2be0 <unknown>
+#13 0x5594099f69b8 <unknown>
+#14 0x5594099f6b88 <unknown>
+#15 0x559409a084de <unknown>
+#16 0x7fab83430ac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 8488...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 8488: Message: 
+Stacktrace:
+#0 0x55cfc3c67a6a <unknown>
+#1 0x55cfc3676ab5 <unknown>
+#2 0x55cfc36c9676 <unknown>
+#3 0x55cfc36c98b1 <unknown>
+#4 0x55cfc3714614 <unknown>
+#5 0x55cfc37117b6 <unknown>
+#6 0x55cfc36bccbf <unknown>
+#7 0x55cfc36bda81 <unknown>
+#8 0x55cfc3c2da64 <unknown>
+#9 0x55cfc3c30951 <unknown>
+#10 0x55cfc3c1a21e <unknown>
+#11 0x55cfc3c3151e <unknown>
+#12 0x55cfc3c00be0 <unknown>
+#13 0x55cfc3c549b8 <unknown>
+#14 0x55cfc3c54b88 <unknown>
+#15 0x55cfc3c664de <unknown>
+#16 0x7f21271d7ac3 <unknown>
+
+WARNING: Erro ao atualizar time 8488: Message: 
+Stacktrace:
+#0 0x55cfc3c67a6a <unknown>
+#1 0x55cfc3676ab5 <unknown>
+#2 0x55cfc36c9676 <unknown>
+#3 0x55cfc36c98b1 <unknown>
+#4 0x55cfc3714614 <unknown>
+#5 0x55cfc37117b6 <unknown>
+#6 0x55cfc36bccbf <unknown>
+#7 0x55cfc36bda81 <unknown>
+#8 0x55cfc3c2da64 <unknown>
+#9 0x55cfc3c30951 <unknown>
+#10 0x55cfc3c1a21e <unknown>
+#11 0x55cfc3c3151e <unknown>
+#12 0x55cfc3c00be0 <unknown>
+#13 0x55cfc3c549b8 <unknown>
+#14 0x55cfc3c54b88 <unknown>
+#15 0x55cfc3c664de <unknown>
+#16 0x7f21271d7ac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 8840...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 8840: Message: 
+Stacktrace:
+#0 0x5616af28ba6a <unknown>
+#1 0x5616aec9aab5 <unknown>
+#2 0x5616aeced676 <unknown>
+#3 0x5616aeced8b1 <unknown>
+#4 0x5616aed38614 <unknown>
+#5 0x5616aed357b6 <unknown>
+#6 0x5616aece0cbf <unknown>
+#7 0x5616aece1a81 <unknown>
+#8 0x5616af251a64 <unknown>
+#9 0x5616af254951 <unknown>
+#10 0x5616af23e21e <unknown>
+#11 0x5616af25551e <unknown>
+#12 0x5616af224be0 <unknown>
+#13 0x5616af2789b8 <unknown>
+#14 0x5616af278b88 <unknown>
+#15 0x5616af28a4de <unknown>
+#16 0x7f53743ceac3 <unknown>
+
+WARNING: Erro ao atualizar time 8840: Message: 
+Stacktrace:
+#0 0x5616af28ba6a <unknown>
+#1 0x5616aec9aab5 <unknown>
+#2 0x5616aeced676 <unknown>
+#3 0x5616aeced8b1 <unknown>
+#4 0x5616aed38614 <unknown>
+#5 0x5616aed357b6 <unknown>
+#6 0x5616aece0cbf <unknown>
+#7 0x5616aece1a81 <unknown>
+#8 0x5616af251a64 <unknown>
+#9 0x5616af254951 <unknown>
+#10 0x5616af23e21e <unknown>
+#11 0x5616af25551e <unknown>
+#12 0x5616af224be0 <unknown>
+#13 0x5616af2789b8 <unknown>
+#14 0x5616af278b88 <unknown>
+#15 0x5616af28a4de <unknown>
+#16 0x7f53743ceac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 9139...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 9139: Message: 
+Stacktrace:
+#0 0x560177897a6a <unknown>
+#1 0x5601772a6ab5 <unknown>
+#2 0x5601772f9676 <unknown>
+#3 0x5601772f98b1 <unknown>
+#4 0x560177344614 <unknown>
+#5 0x5601773417b6 <unknown>
+#6 0x5601772eccbf <unknown>
+#7 0x5601772eda81 <unknown>
+#8 0x56017785da64 <unknown>
+#9 0x560177860951 <unknown>
+#10 0x56017784a21e <unknown>
+#11 0x56017786151e <unknown>
+#12 0x560177830be0 <unknown>
+#13 0x5601778849b8 <unknown>
+#14 0x560177884b88 <unknown>
+#15 0x5601778964de <unknown>
+#16 0x7f8b3cb45ac3 <unknown>
+
+WARNING: Erro ao atualizar time 9139: Message: 
+Stacktrace:
+#0 0x560177897a6a <unknown>
+#1 0x5601772a6ab5 <unknown>
+#2 0x5601772f9676 <unknown>
+#3 0x5601772f98b1 <unknown>
+#4 0x560177344614 <unknown>
+#5 0x5601773417b6 <unknown>
+#6 0x5601772eccbf <unknown>
+#7 0x5601772eda81 <unknown>
+#8 0x56017785da64 <unknown>
+#9 0x560177860951 <unknown>
+#10 0x56017784a21e <unknown>
+#11 0x56017786151e <unknown>
+#12 0x560177830be0 <unknown>
+#13 0x5601778849b8 <unknown>
+#14 0x560177884b88 <unknown>
+#15 0x5601778964de <unknown>
+#16 0x7f8b3cb45ac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 9215...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 9215: Message: 
+Stacktrace:
+#0 0x5639d1683a6a <unknown>
+#1 0x5639d1092ab5 <unknown>
+#2 0x5639d10e5676 <unknown>
+#3 0x5639d10e58b1 <unknown>
+#4 0x5639d1130614 <unknown>
+#5 0x5639d112d7b6 <unknown>
+#6 0x5639d10d8cbf <unknown>
+#7 0x5639d10d9a81 <unknown>
+#8 0x5639d1649a64 <unknown>
+#9 0x5639d164c951 <unknown>
+#10 0x5639d163621e <unknown>
+#11 0x5639d164d51e <unknown>
+#12 0x5639d161cbe0 <unknown>
+#13 0x5639d16709b8 <unknown>
+#14 0x5639d1670b88 <unknown>
+#15 0x5639d16824de <unknown>
+#16 0x7f2750e57ac3 <unknown>
+
+WARNING: Erro ao atualizar time 9215: Message: 
+Stacktrace:
+#0 0x5639d1683a6a <unknown>
+#1 0x5639d1092ab5 <unknown>
+#2 0x5639d10e5676 <unknown>
+#3 0x5639d10e58b1 <unknown>
+#4 0x5639d1130614 <unknown>
+#5 0x5639d112d7b6 <unknown>
+#6 0x5639d10d8cbf <unknown>
+#7 0x5639d10d9a81 <unknown>
+#8 0x5639d1649a64 <unknown>
+#9 0x5639d164c951 <unknown>
+#10 0x5639d163621e <unknown>
+#11 0x5639d164d51e <unknown>
+#12 0x5639d161cbe0 <unknown>
+#13 0x5639d16709b8 <unknown>
+#14 0x5639d1670b88 <unknown>
+#15 0x5639d16824de <unknown>
+#16 0x7f2750e57ac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 9455...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 9455: Message: 
+Stacktrace:
+#0 0x55a457251a6a <unknown>
+#1 0x55a456c60ab5 <unknown>
+#2 0x55a456cb3676 <unknown>
+#3 0x55a456cb38b1 <unknown>
+#4 0x55a456cfe614 <unknown>
+#5 0x55a456cfb7b6 <unknown>
+#6 0x55a456ca6cbf <unknown>
+#7 0x55a456ca7a81 <unknown>
+#8 0x55a457217a64 <unknown>
+#9 0x55a45721a951 <unknown>
+#10 0x55a45720421e <unknown>
+#11 0x55a45721b51e <unknown>
+#12 0x55a4571eabe0 <unknown>
+#13 0x55a45723e9b8 <unknown>
+#14 0x55a45723eb88 <unknown>
+#15 0x55a4572504de <unknown>
+#16 0x7f4c781dcac3 <unknown>
+
+WARNING: Erro ao atualizar time 9455: Message: 
+Stacktrace:
+#0 0x55a457251a6a <unknown>
+#1 0x55a456c60ab5 <unknown>
+#2 0x55a456cb3676 <unknown>
+#3 0x55a456cb38b1 <unknown>
+#4 0x55a456cfe614 <unknown>
+#5 0x55a456cfb7b6 <unknown>
+#6 0x55a456ca6cbf <unknown>
+#7 0x55a456ca7a81 <unknown>
+#8 0x55a457217a64 <unknown>
+#9 0x55a45721a951 <unknown>
+#10 0x55a45720421e <unknown>
+#11 0x55a45721b51e <unknown>
+#12 0x55a4571eabe0 <unknown>
+#13 0x55a45723e9b8 <unknown>
+#14 0x55a45723eb88 <unknown>
+#15 0x55a4572504de <unknown>
+#16 0x7f4c781dcac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 9565...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 9565: Message: 
+Stacktrace:
+#0 0x55944f104a6a <unknown>
+#1 0x55944eb13ab5 <unknown>
+#2 0x55944eb66676 <unknown>
+#3 0x55944eb668b1 <unknown>
+#4 0x55944ebb1614 <unknown>
+#5 0x55944ebae7b6 <unknown>
+#6 0x55944eb59cbf <unknown>
+#7 0x55944eb5aa81 <unknown>
+#8 0x55944f0caa64 <unknown>
+#9 0x55944f0cd951 <unknown>
+#10 0x55944f0b721e <unknown>
+#11 0x55944f0ce51e <unknown>
+#12 0x55944f09dbe0 <unknown>
+#13 0x55944f0f19b8 <unknown>
+#14 0x55944f0f1b88 <unknown>
+#15 0x55944f1034de <unknown>
+#16 0x7f1c9d060ac3 <unknown>
+
+WARNING: Erro ao atualizar time 9565: Message: 
+Stacktrace:
+#0 0x55944f104a6a <unknown>
+#1 0x55944eb13ab5 <unknown>
+#2 0x55944eb66676 <unknown>
+#3 0x55944eb668b1 <unknown>
+#4 0x55944ebb1614 <unknown>
+#5 0x55944ebae7b6 <unknown>
+#6 0x55944eb59cbf <unknown>
+#7 0x55944eb5aa81 <unknown>
+#8 0x55944f0caa64 <unknown>
+#9 0x55944f0cd951 <unknown>
+#10 0x55944f0b721e <unknown>
+#11 0x55944f0ce51e <unknown>
+#12 0x55944f09dbe0 <unknown>
+#13 0x55944f0f19b8 <unknown>
+#14 0x55944f0f1b88 <unknown>
+#15 0x55944f1034de <unknown>
+#16 0x7f1c9d060ac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 9621...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 9621: Message: 
+Stacktrace:
+#0 0x5556e5f00a6a <unknown>
+#1 0x5556e590fab5 <unknown>
+#2 0x5556e5962676 <unknown>
+#3 0x5556e59628b1 <unknown>
+#4 0x5556e59ad614 <unknown>
+#5 0x5556e59aa7b6 <unknown>
+#6 0x5556e5955cbf <unknown>
+#7 0x5556e5956a81 <unknown>
+#8 0x5556e5ec6a64 <unknown>
+#9 0x5556e5ec9951 <unknown>
+#10 0x5556e5eb321e <unknown>
+#11 0x5556e5eca51e <unknown>
+#12 0x5556e5e99be0 <unknown>
+#13 0x5556e5eed9b8 <unknown>
+#14 0x5556e5eedb88 <unknown>
+#15 0x5556e5eff4de <unknown>
+#16 0x7f2318cdbac3 <unknown>
+
+WARNING: Erro ao atualizar time 9621: Message: 
+Stacktrace:
+#0 0x5556e5f00a6a <unknown>
+#1 0x5556e590fab5 <unknown>
+#2 0x5556e5962676 <unknown>
+#3 0x5556e59628b1 <unknown>
+#4 0x5556e59ad614 <unknown>
+#5 0x5556e59aa7b6 <unknown>
+#6 0x5556e5955cbf <unknown>
+#7 0x5556e5956a81 <unknown>
+#8 0x5556e5ec6a64 <unknown>
+#9 0x5556e5ec9951 <unknown>
+#10 0x5556e5eb321e <unknown>
+#11 0x5556e5eca51e <unknown>
+#12 0x5556e5e99be0 <unknown>
+#13 0x5556e5eed9b8 <unknown>
+#14 0x5556e5eedb88 <unknown>
+#15 0x5556e5eff4de <unknown>
+#16 0x7f2318cdbac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 9735...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 9735: Message: 
+Stacktrace:
+#0 0x5602bb9fda6a <unknown>
+#1 0x5602bb40cab5 <unknown>
+#2 0x5602bb45f676 <unknown>
+#3 0x5602bb45f8b1 <unknown>
+#4 0x5602bb4aa614 <unknown>
+#5 0x5602bb4a77b6 <unknown>
+#6 0x5602bb452cbf <unknown>
+#7 0x5602bb453a81 <unknown>
+#8 0x5602bb9c3a64 <unknown>
+#9 0x5602bb9c6951 <unknown>
+#10 0x5602bb9b021e <unknown>
+#11 0x5602bb9c751e <unknown>
+#12 0x5602bb996be0 <unknown>
+#13 0x5602bb9ea9b8 <unknown>
+#14 0x5602bb9eab88 <unknown>
+#15 0x5602bb9fc4de <unknown>
+#16 0x7fe2fe4d3ac3 <unknown>
+
+WARNING: Erro ao atualizar time 9735: Message: 
+Stacktrace:
+#0 0x5602bb9fda6a <unknown>
+#1 0x5602bb40cab5 <unknown>
+#2 0x5602bb45f676 <unknown>
+#3 0x5602bb45f8b1 <unknown>
+#4 0x5602bb4aa614 <unknown>
+#5 0x5602bb4a77b6 <unknown>
+#6 0x5602bb452cbf <unknown>
+#7 0x5602bb453a81 <unknown>
+#8 0x5602bb9c3a64 <unknown>
+#9 0x5602bb9c6951 <unknown>
+#10 0x5602bb9b021e <unknown>
+#11 0x5602bb9c751e <unknown>
+#12 0x5602bb996be0 <unknown>
+#13 0x5602bb9ea9b8 <unknown>
+#14 0x5602bb9eab88 <unknown>
+#15 0x5602bb9fc4de <unknown>
+#16 0x7fe2fe4d3ac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 9881...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 9881: Message: 
+Stacktrace:
+#0 0x560b4e130a6a <unknown>
+#1 0x560b4db3fab5 <unknown>
+#2 0x560b4db92676 <unknown>
+#3 0x560b4db928b1 <unknown>
+#4 0x560b4dbdd614 <unknown>
+#5 0x560b4dbda7b6 <unknown>
+#6 0x560b4db85cbf <unknown>
+#7 0x560b4db86a81 <unknown>
+#8 0x560b4e0f6a64 <unknown>
+#9 0x560b4e0f9951 <unknown>
+#10 0x560b4e0e321e <unknown>
+#11 0x560b4e0fa51e <unknown>
+#12 0x560b4e0c9be0 <unknown>
+#13 0x560b4e11d9b8 <unknown>
+#14 0x560b4e11db88 <unknown>
+#15 0x560b4e12f4de <unknown>
+#16 0x7fae3e192ac3 <unknown>
+
+WARNING: Erro ao atualizar time 9881: Message: 
+Stacktrace:
+#0 0x560b4e130a6a <unknown>
+#1 0x560b4db3fab5 <unknown>
+#2 0x560b4db92676 <unknown>
+#3 0x560b4db928b1 <unknown>
+#4 0x560b4dbdd614 <unknown>
+#5 0x560b4dbda7b6 <unknown>
+#6 0x560b4db85cbf <unknown>
+#7 0x560b4db86a81 <unknown>
+#8 0x560b4e0f6a64 <unknown>
+#9 0x560b4e0f9951 <unknown>
+#10 0x560b4e0e321e <unknown>
+#11 0x560b4e0fa51e <unknown>
+#12 0x560b4e0c9be0 <unknown>
+#13 0x560b4e11d9b8 <unknown>
+#14 0x560b4e11db88 <unknown>
+#15 0x560b4e12f4de <unknown>
+#16 0x7fae3e192ac3 <unknown>
+
+  Progresso: 40/229
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+WARNING: Cloudflare challenge did not resolve within 25s
+WARNING: Cloudflare challenge did not resolve within 15s
+
+  Tentativa 1/3 para time 9928...
+WARNING: Cloudflare challenge did not resolve within 15s
+WARNING: Erro na tentativa 1 do time 9928: Message: 
+Stacktrace:
+#0 0x557eb339ba6a <unknown>
+#1 0x557eb2daaab5 <unknown>
+#2 0x557eb2dfd676 <unknown>
+#3 0x557eb2dfd8b1 <unknown>
+#4 0x557eb2e48614 <unknown>
+#5 0x557eb2e457b6 <unknown>
+#6 0x557eb2df0cbf <unknown>
+#7 0x557eb2df1a81 <unknown>
+#8 0x557eb3361a64 <unknown>
+#9 0x557eb3364951 <unknown>
+#10 0x557eb334e21e <unknown>
+#11 0x557eb336551e <unknown>
+#12 0x557eb3334be0 <unknown>
+#13 0x557eb33889b8 <unknown>
+#14 0x557eb3388b88 <unknown>
+#15 0x557eb339a4de <unknown>
+#16 0x7fded00b1ac3 <unknown>
+
+WARNING: Erro ao atualizar time 9928: Message: 
+Stacktrace:
+#0 0x557eb339ba6a <unknown>
+#1 0x557eb2daaab5 <unknown>
+#2 0x557eb2dfd676 <unknown>
+#3 0x557eb2dfd8b1 <unknown>
+#4 0x557eb2e48614 <unknown>
+#5 0x557eb2e457b6 <unknown>
+#6 0x557eb2df0cbf <unknown>
+#7 0x557eb2df1a81 <unknown>
+#8 0x557eb3361a64 <unknown>
+#9 0x557eb3364951 <unknown>
+#10 0x557eb334e21e <unknown>
+#11 0x557eb336551e <unknown>
+#12 0x557eb3334be0 <unknown>
+#13 0x557eb33889b8 <unknown>
+#14 0x557eb3388b88 <unknown>
+#15 0x557eb339a4de <unknown>
+#16 0x7fded00b1ac3 <unknown>
+
+INFO: patching driver executable /root/.local/share/undetected_chromedriver/undetected_chromedriver
+Traceback (most recent call last):
+  File "/root/hltv/sync_weekly.py", line 145, in <module>
+    main()
+  File "/root/hltv/sync_weekly.py", line 111, in main
+    update_all_teams(headless=True)
+  File "/root/hltv/sync_weekly.py", line 76, in update_all_teams
+    driver = pool.checkout()
+  File "/root/hltv/src/scrapers/selenium_helpers.py", line 331, in checkout
+    d = self._create_one()
+  File "/root/hltv/src/scrapers/selenium_helpers.py", line 297, in _create_one
+    d.get("https://www.hltv.org/ranking/teams")
+  File "/usr/local/lib/python3.10/dist-packages/undetected_chromedriver/__init__.py", line 496, in get_wrapped
+    if self.execute_script("return navigator.webdriver"):
+  File "/usr/local/lib/python3.10/dist-packages/selenium/webdriver/remote/webdriver.py", line 532, in execute_script
+    return self.execute(command, {"script": script, "args": converted_args})["value"]
+  File "/usr/local/lib/python3.10/dist-packages/selenium/webdriver/remote/webdriver.py", line 446, in execute
+    self.error_handler.check_response(response)
+  File "/usr/local/lib/python3.10/dist-packages/selenium/webdriver/remote/errorhandler.py", line 232, in check_response
+    raise exception_class(message, screen, stacktrace)
+selenium.common.exceptions.WebDriverException: Message: tab crashed
+  (Session info: chrome=146.0.7680.80)
+

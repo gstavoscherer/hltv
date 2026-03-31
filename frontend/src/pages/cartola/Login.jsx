@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { fetchCartola } from '../../api'
 import { useAuth } from '../../components/cartola/AuthProvider'
 
@@ -9,6 +9,8 @@ export default function Login() {
   const [error, setError] = useState(null)
   const { login } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const redirect = searchParams.get('redirect')
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -19,7 +21,7 @@ export default function Login() {
         body: JSON.stringify({ email, password }),
       })
       login(data.token, data.username)
-      navigate('/cartola/portfolio')
+      navigate(redirect || '/cartola/portfolio')
     } catch (err) {
       setError(err.message)
     }
@@ -39,7 +41,7 @@ export default function Login() {
         </button>
       </form>
       <p style={{ marginTop: 16, color: 'var(--text-secondary)', textAlign: 'center' }}>
-        Nao tem conta? <Link to="/cartola/register">Cadastre-se</Link>
+        Nao tem conta? <Link to={`/cartola/register${redirect ? `?redirect=${encodeURIComponent(redirect)}` : ''}`}>Cadastre-se</Link>
       </p>
     </div>
   )

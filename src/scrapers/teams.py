@@ -12,6 +12,67 @@ from .selenium_helpers import create_driver, wait_for_cloudflare, random_delay
 
 logger = logging.getLogger(__name__)
 
+# Known role keywords from HLTV lineup section
+_ROLE_KEYWORDS = {
+    "awper": "awper", "awp": "awper",
+    "igl": "igl", "in-game leader": "igl",
+    "entry": "entry", "entry fragger": "entry",
+    "rifler": "rifler",
+    "support": "support",
+    "lurker": "lurker",
+    "coach": "coach",
+}
+
+
+def _scrape_roles_from_lineup(driver):
+    """Extract player roles from the team lineup section on HLTV."""
+    roles = {}
+    try:
+        lineup_items = driver.find_elements(By.CSS_SELECTOR, ".lineup .player-info, .players-table .player-row, .bodyshot-team-flex .col")
+        for item in lineup_items:
+            try:
+                link = item.find_element(By.CSS_SELECTOR, "a[href*='/player/']")
+                href = link.get_attribute("href")
+                if not href or "/player/" not in href:
+                    continue
+                player_id = int(href.split("/")[-2])
+
+                # Try to find role text within the same container
+                text = item.text.lower()
+                for keyword, role in _ROLE_KEYWORDS.items():
+                    if keyword in text:
+                        roles[player_id] = role
+                        break
+            except (NoSuchElementException, Exception):
+                continue
+
+        # Fallback: check for star player / IGL badges in the page
+        if not roles:
+            try:
+                flag_elements = driver.find_elements(By.CSS_SELECTOR, ".playerFlagName, .lineup-player")
+                for elem in flag_elements:
+                    try:
+                        link = elem.find_element(By.CSS_SELECTOR, "a[href*='/player/']")
+                        href = link.get_attribute("href")
+                        if not href:
+                            continue
+                        player_id = int(href.split("/")[-2])
+
+                        parent_text = elem.text.lower()
+                        for keyword, role in _ROLE_KEYWORDS.items():
+                            if keyword in parent_text:
+                                roles[player_id] = role
+                                break
+                    except Exception:
+                        continue
+            except Exception:
+                pass
+
+    except Exception as e:
+        logger.debug("Nao conseguiu extrair roles do lineup: %s", e)
+
+    return roles
+
 
 def _scrape_team_selenium(team_id, headless=True, max_retries=3, driver=None):
     owns_driver = driver is None
@@ -81,6 +142,13 @@ def _scrape_team_selenium(team_id, headless=True, max_retries=3, driver=None):
 
             except Exception as e:
                 logger.warning("Erro ao buscar roster de %d: %s", team_id, e)
+
+            # Scrape roles from lineup section
+            roles_map = _scrape_roles_from_lineup(driver)
+            for player_entry in roster:
+                pid = player_entry["player_id"]
+                if pid in roles_map:
+                    player_entry["role"] = roles_map[pid]
 
             return {"team": team_data, "roster": roster}
 

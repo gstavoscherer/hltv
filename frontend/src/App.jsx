@@ -18,6 +18,7 @@ import Ranking from './pages/cartola/Ranking'
 import Login from './pages/cartola/Login'
 import Register from './pages/cartola/Register'
 import TransactionHistory from './pages/cartola/TransactionHistory'
+import LinkDiscord from './pages/cartola/LinkDiscord'
 
 function App() {
   return (
@@ -42,6 +43,7 @@ function App() {
             <Route path="/cartola/ranking" element={<Ranking />} />
             <Route path="/cartola/login" element={<Login />} />
             <Route path="/cartola/register" element={<Register />} />
+            <Route path="/cartola/link" element={<LinkDiscord />} />
           </Route>
         </Routes>
       </BrowserRouter>
